@@ -1,0 +1,33 @@
+---
+import Base from '../layouts/Base.astro';
+import { Icon } from 'astro-icon/components';
+---
+
+<Base title="Konut Finansman Karşılaştırma Aracı" description="Evim Sistemi, Banka Kredisi ve Kendin Biriktir seçeneklerini Net Bugünkü Değer bazında karşılaştırın.">
+  <section class="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 py-10 sm:py-16">
+    {/* Hero */}
+    <div class="text-center max-w-2xl mx-auto mb-10 sm:mb-14">
+      <h1 class="font-heading text-3xl sm:text-4xl lg:text-5xl font-bold text-brand-heading tracking-tight">
+        Konut Finansmanınızı
+        <span class="text-brand-primary">Akıllıca</span> Karşılaştırın
+      </h1>
+      <p class="mt-4 text-base sm:text-lg text-brand-text leading-relaxed">
+        Tasarruf Finansman Sistemi (Evim), Banka Kredisi ve Kendin Biriktir
+        seçeneklerini Net Bugünkü Değer bazında analiz edin.
+      </p>
+    </div>
+
+    {/* Calculator placeholder */}
+    <div class="bg-brand-surface border border-brand-border rounded-xl p-8 sm:p-12 text-center">
+      <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-brand-primary-light text-brand-primary mb-4">
+        <Icon name="tabler:calculator" class="w-8 h-8" />
+      </div>
+      <h2 class="font-heading text-xl font-semibold text-brand-heading mb-2">
+        Hesaplama Aracı
+      </h2>
+      <p class="text-brand-text">
+        Hesaplama motoru ve UI bileşenleri burada yer alacak.
+      </p>
+    </div>
+  </section>
+</Base>

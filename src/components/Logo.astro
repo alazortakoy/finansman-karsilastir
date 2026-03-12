@@ -1,0 +1,15 @@
+---
+interface Props {
+  class?: string;
+}
+
+const { class: className } = Astro.props;
+---
+
+<a href="/" class:list={["flex items-center gap-2 font-heading font-bold text-xl tracking-tight text-brand-primary hover:text-brand-secondary transition-colors", className]}>
+  <svg width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+    <rect width="28" height="28" rx="6" fill="currentColor" opacity="0.15" />
+    <path d="M7 20V12L14 7L21 12V20H16V15H12V20H7Z" fill="currentColor" />
+  </svg>
+  <span>Finansman<span class="text-brand-secondary">Karşılaştır</span></span>
+</a>

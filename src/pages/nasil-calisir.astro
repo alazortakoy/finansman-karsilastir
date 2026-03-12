@@ -1,0 +1,46 @@
+---
+import Base from '../layouts/Base.astro';
+import { Icon } from 'astro-icon/components';
+---
+
+<Base title="Nasıl Çalışır?" description="Net Bugünkü Değer metodolojisi ve üç finansman modelinin açıklaması.">
+  <section class="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8 py-10 sm:py-16">
+    <h1 class="font-heading text-3xl sm:text-4xl font-bold text-brand-heading tracking-tight mb-6">
+      Nasıl Çalışır?
+    </h1>
+
+    <div class="prose prose-gray max-w-none space-y-8">
+      <div class="bg-brand-surface border border-brand-border rounded-xl p-6">
+        <div class="flex items-start gap-3">
+          <div class="shrink-0 w-10 h-10 rounded-lg bg-brand-primary-light text-brand-primary flex items-center justify-center">
+            <Icon name="tabler:chart-line" class="w-5 h-5" />
+          </div>
+          <div>
+            <h2 class="font-heading text-lg font-semibold text-brand-heading mt-0 mb-2">
+              Net Bugünkü Değer (NBD)
+            </h2>
+            <p class="text-brand-text text-sm leading-relaxed">
+              Metodoloji açıklaması burada yer alacak.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-brand-surface border border-brand-border rounded-xl p-6">
+        <div class="flex items-start gap-3">
+          <div class="shrink-0 w-10 h-10 rounded-lg bg-brand-primary-light text-brand-primary flex items-center justify-center">
+            <Icon name="tabler:list-details" class="w-5 h-5" />
+          </div>
+          <div>
+            <h2 class="font-heading text-lg font-semibold text-brand-heading mt-0 mb-2">
+              Üç Finansman Modeli
+            </h2>
+            <p class="text-brand-text text-sm leading-relaxed">
+              Model açıklamaları burada yer alacak.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</Base>

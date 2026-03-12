@@ -1,0 +1,53 @@
+---
+import Base from '../layouts/Base.astro';
+import { Icon } from 'astro-icon/components';
+---
+
+<Base title="Hakkında" description="Proje hakkında bilgi ve yasal uyarılar.">
+  <section class="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8 py-10 sm:py-16">
+    <h1 class="font-heading text-3xl sm:text-4xl font-bold text-brand-heading tracking-tight mb-6">
+      Hakkında
+    </h1>
+
+    <div class="space-y-6">
+      <div class="bg-brand-surface border border-brand-border rounded-xl p-6">
+        <h2 class="font-heading text-lg font-semibold text-brand-heading mb-3">
+          Proje Amacı
+        </h2>
+        <p class="text-brand-text text-sm leading-relaxed">
+          Bu araç, konut veya araç almayı düşünen bireylerin farklı finansman
+          seçeneklerini Net Bugünkü Değer (NBD) bazında rasyonel olarak
+          karşılaştırmasını sağlar. Tasarruf Finansman Sistemi (Evim), Banka
+          Konut Kredisi ve Kendin Biriktir alternatifleri tek bir platformda
+          analiz edilir.
+        </p>
+      </div>
+
+      <div class="bg-amber-50 border border-amber-200 rounded-xl p-6">
+        <div class="flex items-start gap-3">
+          <Icon name="tabler:alert-triangle" class="w-5 h-5 text-brand-warning shrink-0 mt-0.5" />
+          <div>
+            <h2 class="font-heading text-lg font-semibold text-brand-heading mb-2">
+              Yasal Uyarı
+            </h2>
+            <ul class="text-brand-text text-sm leading-relaxed space-y-2">
+              <li>Bu araç eğitim ve bilgilendirme amaçlıdır. Yatırım veya finansman tavsiyesi niteliği taşımaz.</li>
+              <li>Hesaplamalar girilen parametrelere dayalı tahmini değerlerdir. Gerçek maliyetler banka/şirket koşullarına göre farklılık gösterebilir.</li>
+              <li>Finansal kararlarınızda mutlaka yetkili mali müşavirinize danışın.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-brand-surface border border-brand-border rounded-xl p-6">
+        <h2 class="font-heading text-lg font-semibold text-brand-heading mb-3">
+          Teknik Bilgi
+        </h2>
+        <p class="text-brand-text text-sm leading-relaxed">
+          Tüm hesaplamalar tarayıcınızda (client-side) çalışır. Hiçbir veri
+          sunucuya gönderilmez. Kaynak kodu açıktır.
+        </p>
+      </div>
+    </div>
+  </section>
+</Base>

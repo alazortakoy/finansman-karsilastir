@@ -1,0 +1,78 @@
+---
+import Logo from './Logo.astro';
+import { Icon } from 'astro-icon/components';
+
+const currentYear = new Date().getFullYear();
+
+const footerLinks = [
+  { href: '/', label: 'Hesapla' },
+  { href: '/nasil-calisir', label: 'Nasıl Çalışır?' },
+  { href: '/hakkinda', label: 'Hakkında' },
+];
+---
+
+<footer class="bg-brand-secondary text-white mt-auto">
+  <div class="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 py-10 sm:py-12">
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+      {/* Brand */}
+      <div class="sm:col-span-2 lg:col-span-1">
+        <a href="/" class="inline-flex items-center gap-2 font-heading font-bold text-xl tracking-tight text-white hover:text-brand-primary-light transition-colors">
+          <svg width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <rect width="28" height="28" rx="6" fill="currentColor" opacity="0.15" />
+            <path d="M7 20V12L14 7L21 12V20H16V15H12V20H7Z" fill="currentColor" />
+          </svg>
+          <span>FinansmanKarşılaştır</span>
+        </a>
+        <p class="mt-3 text-sm text-teal-200/80 leading-relaxed max-w-xs">
+          Konut finansman seçeneklerini Net Bugünkü Değer bazında karşılaştırın.
+        </p>
+      </div>
+
+      {/* Links */}
+      <div>
+        <h3 class="font-heading font-semibold text-sm uppercase tracking-wider text-teal-300 mb-3">
+          Sayfalar
+        </h3>
+        <ul class="space-y-2">
+          {footerLinks.map((link) => (
+            <li>
+              <a
+                href={link.href}
+                class="text-sm text-teal-100/80 hover:text-white transition-colors"
+              >
+                {link.label}
+              </a>
+            </li>
+          ))}
+        </ul>
+      </div>
+
+      {/* Info */}
+      <div>
+        <h3 class="font-heading font-semibold text-sm uppercase tracking-wider text-teal-300 mb-3">
+          Bilgilendirme
+        </h3>
+        <p class="text-sm text-teal-100/80 leading-relaxed">
+          Tüm hesaplamalar tarayıcınızda çalışır. Verileriniz hiçbir sunucuya gönderilmez.
+        </p>
+      </div>
+    </div>
+
+    {/* Disclaimer */}
+    <div class="mt-8 pt-6 border-t border-teal-700/50">
+      <div class="flex items-start gap-2 bg-teal-800/40 rounded-lg p-3 sm:p-4">
+        <Icon name="tabler:alert-triangle" class="w-5 h-5 text-brand-warning shrink-0 mt-0.5" />
+        <p class="text-xs sm:text-sm text-teal-200/80 leading-relaxed">
+          Bu araç eğitim ve bilgilendirme amaçlıdır. Yatırım veya finansman tavsiyesi niteliği taşımaz.
+        </p>
+      </div>
+    </div>
+
+    {/* Copyright */}
+    <div class="mt-6 text-center">
+      <p class="text-xs text-teal-300/60">
+        &copy; {currentYear} FinansmanKarşılaştır. Tüm hakları saklıdır.
+      </p>
+    </div>
+  </div>
+</footer>
