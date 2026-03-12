@@ -1,0 +1,56 @@
+---
+import { Icon } from 'astro-icon/components';
+import ComparisonCard from './ComparisonCard.astro';
+---
+
+<section id="results-section" class="hidden mt-8 space-y-6">
+  <!-- Section Header -->
+  <div class="flex items-center gap-3">
+    <div class="w-10 h-10 rounded-lg bg-brand-primary-light flex items-center justify-center">
+      <Icon name="tabler:chart-bar" class="w-5 h-5 text-brand-primary" />
+    </div>
+    <div>
+      <h2 class="font-heading text-xl font-semibold text-brand-heading">Karşılaştırma Sonuçları</h2>
+      <p class="text-sm text-brand-text">En düşük Maliyet NBD = en karlı seçenek</p>
+    </div>
+  </div>
+
+  <!-- Discount Rate Warning -->
+  <div id="warning-no-discount" class="hidden flex items-start gap-2 bg-brand-warning/10 border border-brand-warning/20 rounded-lg p-3">
+    <Icon name="tabler:alert-triangle" class="w-5 h-5 text-brand-warning shrink-0 mt-0.5" />
+    <p class="text-sm text-brand-text">
+      İskonto oranı girilmediğinde paranın zaman değeri hesaba katılmaz. Sonuçlar nominal toplam maliyeti gösterir.
+    </p>
+  </div>
+
+  <!-- Çekilişli Scenario Tabs (hidden unless çekilişli) -->
+  <div id="cekilisli-tabs" class="hidden">
+    <div class="flex gap-1.5 bg-brand-surface rounded-lg p-1 overflow-x-auto">
+      <button type="button" data-senaryo="enIyi" class="senaryo-btn active-senaryo-btn px-3 py-2 rounded-md text-xs font-medium transition-all whitespace-nowrap">
+        En İyi
+      </button>
+      <button type="button" data-senaryo="beklenen" class="senaryo-btn px-3 py-2 rounded-md text-xs font-medium transition-all whitespace-nowrap text-brand-text hover:text-brand-heading">
+        Beklenen
+      </button>
+      <button type="button" data-senaryo="enKotu" class="senaryo-btn px-3 py-2 rounded-md text-xs font-medium transition-all whitespace-nowrap text-brand-text hover:text-brand-heading">
+        En Kötü
+      </button>
+    </div>
+  </div>
+
+  <!-- Result Cards Grid -->
+  <div id="results-grid" class="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-5">
+    <!-- Cards are dynamically inserted here -->
+  </div>
+
+  <!-- Disclaimer -->
+  <div class="flex items-start gap-2 bg-brand-surface border border-brand-border-light rounded-lg p-3">
+    <Icon name="tabler:info-circle" class="w-4 h-4 text-brand-text shrink-0 mt-0.5" />
+    <p class="text-xs text-brand-text leading-relaxed">
+      Hesaplamalar girilen parametrelere dayalı tahmini değerlerdir. Gerçek maliyetler banka/şirket koşullarına göre farklılık gösterebilir.
+    </p>
+  </div>
+
+  <!-- Card Template -->
+  <ComparisonCard />
+</section>

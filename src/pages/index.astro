@@ -1,12 +1,18 @@
 ---
 import Base from '../layouts/Base.astro';
 import { Icon } from 'astro-icon/components';
+import CommonInputs from '../components/calculator/CommonInputs.astro';
+import BankaInputs from '../components/calculator/BankaInputs.astro';
+import EvimInputs from '../components/calculator/EvimInputs.astro';
+import BirikimInputs from '../components/calculator/BirikimInputs.astro';
+import ResultsSummary from '../components/calculator/ResultsSummary.astro';
+import CashFlowTable from '../components/calculator/CashFlowTable.astro';
 ---
 
 <Base title="Konut Finansman Karşılaştırma Aracı" description="Evim Sistemi, Banka Kredisi ve Kendin Biriktir seçeneklerini Net Bugünkü Değer bazında karşılaştırın.">
-  <section class="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 py-10 sm:py-16">
+  <section class="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
     {/* Hero */}
-    <div class="text-center max-w-2xl mx-auto mb-10 sm:mb-14">
+    <div class="text-center max-w-2xl mx-auto mb-8 sm:mb-12">
       <h1 class="font-heading text-3xl sm:text-4xl lg:text-5xl font-bold text-brand-heading tracking-tight">
         Konut Finansmanınızı
         <span class="text-brand-primary">Akıllıca</span> Karşılaştırın
@@ -17,17 +23,629 @@ import { Icon } from 'astro-icon/components';
       </p>
     </div>
 
-    {/* Calculator placeholder */}
-    <div class="bg-brand-surface border border-brand-border rounded-xl p-8 sm:p-12 text-center">
-      <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-brand-primary-light text-brand-primary mb-4">
-        <Icon name="tabler:calculator" class="w-8 h-8" />
+    {/* Calculator */}
+    <div id="calculator" class="space-y-8">
+      {/* Step 1: Common Parameters */}
+      <div class="bg-white border border-brand-border rounded-xl p-5 sm:p-6 shadow-sm">
+        <div class="flex items-center gap-3 mb-5">
+          <div class="w-8 h-8 rounded-lg bg-brand-primary text-white flex items-center justify-center text-sm font-bold shrink-0">1</div>
+          <h2 class="font-heading text-lg font-semibold text-brand-heading">Temel Bilgiler</h2>
+        </div>
+        <CommonInputs />
       </div>
-      <h2 class="font-heading text-xl font-semibold text-brand-heading mb-2">
-        Hesaplama Aracı
-      </h2>
-      <p class="text-brand-text">
-        Hesaplama motoru ve UI bileşenleri burada yer alacak.
-      </p>
+
+      {/* Step 2: Model Tabs */}
+      <div class="bg-white border border-brand-border rounded-xl shadow-sm overflow-hidden">
+        <div class="flex items-center gap-3 p-5 sm:p-6 pb-0">
+          <div class="w-8 h-8 rounded-lg bg-brand-primary text-white flex items-center justify-center text-sm font-bold shrink-0">2</div>
+          <h2 class="font-heading text-lg font-semibold text-brand-heading">Finansman Modelleri</h2>
+        </div>
+
+        {/* Model Tab Navigation */}
+        <div class="px-5 sm:px-6 pt-4">
+          <div class="flex border-b border-brand-border">
+            <button
+              type="button"
+              data-model-tab="banka"
+              class="model-tab active-model-tab flex-1 px-3 py-3 text-sm font-medium transition-colors relative whitespace-nowrap"
+            >
+              <Icon name="tabler:building-bank" class="w-4 h-4 inline-block mr-1.5 -mt-0.5" />
+              Banka Kredisi
+            </button>
+            <button
+              type="button"
+              data-model-tab="evim"
+              class="model-tab flex-1 px-3 py-3 text-sm font-medium transition-colors relative text-brand-text hover:text-brand-heading whitespace-nowrap"
+            >
+              <Icon name="tabler:home-hand" class="w-4 h-4 inline-block mr-1.5 -mt-0.5" />
+              Evim Sistemi
+            </button>
+            <button
+              type="button"
+              data-model-tab="biriktir"
+              class="model-tab flex-1 px-3 py-3 text-sm font-medium transition-colors relative text-brand-text hover:text-brand-heading whitespace-nowrap"
+            >
+              <Icon name="tabler:pig-money" class="w-4 h-4 inline-block mr-1.5 -mt-0.5" />
+              Kendin Biriktir
+            </button>
+          </div>
+        </div>
+
+        {/* Model Panels */}
+        <div class="p-5 sm:p-6">
+          <BankaInputs />
+          <EvimInputs />
+          <BirikimInputs />
+        </div>
+      </div>
+
+      {/* Calculate Button */}
+      <div class="text-center space-y-3">
+        <button
+          type="button"
+          id="btn-karsilastir"
+          class="w-full sm:w-auto px-8 py-4 rounded-xl bg-brand-primary text-white font-heading font-semibold text-lg shadow-lg shadow-brand-primary/25 hover:bg-brand-secondary hover:shadow-xl hover:shadow-brand-secondary/25 active:scale-[0.98] transition-all"
+        >
+          <Icon name="tabler:arrows-exchange" class="w-5 h-5 inline-block mr-2 -mt-0.5" />
+          Karşılaştır
+        </button>
+        <p id="error-message" class="hidden text-sm text-brand-danger font-medium"></p>
+      </div>
+
+      {/* Results */}
+      <ResultsSummary />
+      <CashFlowTable />
     </div>
   </section>
 </Base>
+
+<style is:global>
+  .active-asset-btn,
+  .active-evim-btn,
+  .active-taksit-btn,
+  .active-rmode-btn,
+  .active-senaryo-btn,
+  .active-cf-btn {
+    background-color: #0D9488;
+    color: white;
+    box-shadow: 0 1px 3px 0 rgb(13 148 136 / 0.3);
+  }
+
+  .active-model-tab {
+    color: #0D9488;
+    border-bottom: 2px solid #0D9488;
+  }
+
+  .model-tab:not(.active-model-tab) {
+    border-bottom: 2px solid transparent;
+  }
+
+  .calc-input.input-error {
+    border-color: #EF4444;
+  }
+</style>
+
+<script>
+  import {
+    yillikToAylik,
+    hesaplaTeslimAyi,
+    hesaplaBankaNBD,
+    hesaplaEvimNBD,
+    hesaplaBirikimNBD,
+    hesaplaCekilisliSenaryolar,
+  } from '../lib/engine';
+  import type {
+    CommonParams,
+    BankaParams,
+    EvimParams,
+    BirikimParams,
+    TaksitPlan,
+    ModelSonuc,
+  } from '../lib/engine';
+  import type { CekilisliSonuc } from '../lib/engine/cekilisli';
+
+  // ── Utilities ──────────────────────────────────────────────
+
+  const TL = new Intl.NumberFormat('tr-TR', {
+    style: 'currency',
+    currency: 'TRY',
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  });
+
+  const TL2 = new Intl.NumberFormat('tr-TR', {
+    style: 'currency',
+    currency: 'TRY',
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
+
+  const NUM = new Intl.NumberFormat('tr-TR');
+
+  function parseTL(val: string): number {
+    if (!val) return 0;
+    return parseFloat(val.replace(/\./g, '').replace(',', '.')) || 0;
+  }
+
+  function formatTLInput(input: HTMLInputElement) {
+    const raw = input.value.replace(/\D/g, '');
+    if (!raw) { input.value = ''; return; }
+    input.value = NUM.format(parseInt(raw, 10));
+  }
+
+  function getNum(id: string): number {
+    const el = document.getElementById(id) as HTMLInputElement | null;
+    if (!el) return 0;
+    if (el.type === 'number') return parseFloat(el.value) || 0;
+    return parseTL(el.value);
+  }
+
+  function getStr(id: string): string {
+    return (document.getElementById(id) as HTMLInputElement | null)?.value ?? '';
+  }
+
+  function $(id: string) { return document.getElementById(id); }
+
+  // ── TL input formatting ────────────────────────────────────
+
+  document.querySelectorAll<HTMLInputElement>('input[inputmode="numeric"]').forEach(input => {
+    input.addEventListener('input', () => formatTLInput(input));
+    if (input.value && input.value !== '0') formatTLInput(input);
+  });
+
+  // ── Toggle helpers ─────────────────────────────────────────
+
+  function setupToggle(toggleId: string, panelId: string) {
+    const toggle = $(toggleId) as HTMLInputElement | null;
+    const panel = $(panelId);
+    if (!toggle || !panel) return;
+    toggle.addEventListener('change', () => panel.classList.toggle('hidden', !toggle.checked));
+  }
+
+  setupToggle('toggle-kira', 'kira-panel');
+  setupToggle('toggle-banka-ek', 'banka-ek-panel');
+  setupToggle('toggle-kiraDestegi', 'kiraDestegi-panel');
+
+  // Advanced settings
+  $('advanced-toggle')?.addEventListener('click', () => {
+    const panel = $('advanced-panel');
+    const chevron = $('advanced-chevron');
+    const showing = panel?.classList.toggle('hidden') === false;
+    chevron?.style.setProperty('transform', showing ? 'rotate(180deg)' : '');
+  });
+
+  // ── Button group helper ────────────────────────────────────
+
+  function setupBtnGroup(
+    btnClass: string,
+    activeClass: string,
+    hiddenId: string,
+    dataKey: string,
+    cb?: (val: string) => void,
+  ) {
+    document.querySelectorAll<HTMLButtonElement>(`.${btnClass}`).forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll(`.${btnClass}`).forEach(b => {
+          b.classList.remove(activeClass);
+          b.classList.add('text-brand-text', 'hover:text-brand-heading');
+        });
+        btn.classList.add(activeClass);
+        btn.classList.remove('text-brand-text', 'hover:text-brand-heading');
+        const val = (btn.dataset as any)[dataKey] ?? '';
+        const h = $(hiddenId) as HTMLInputElement;
+        if (h) h.value = val;
+        cb?.(val);
+      });
+    });
+  }
+
+  setupBtnGroup('asset-type-btn', 'active-asset-btn', 'input-assetType', 'asset');
+  setupBtnGroup('rmode-btn', 'active-rmode-btn', 'input-R_mode', 'rmode');
+  setupBtnGroup('evim-model-btn', 'active-evim-btn', 'input-evim-model', 'evimModel', val => {
+    $('teslim-cekilissiz')?.classList.toggle('hidden', val === 'cekilisli');
+    $('teslim-cekilisli')?.classList.toggle('hidden', val !== 'cekilisli');
+  });
+  setupBtnGroup('taksit-plan-btn', 'active-taksit-btn', 'input-taksitPlan', 'taksitPlan', val => {
+    document.querySelectorAll('.plan-fields').forEach(p => p.classList.add('hidden'));
+    $(`plan-${val}`)?.classList.remove('hidden');
+  });
+
+  // ── Model tabs ─────────────────────────────────────────────
+
+  document.querySelectorAll<HTMLButtonElement>('.model-tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      document.querySelectorAll('.model-tab').forEach(t => {
+        t.classList.remove('active-model-tab');
+        t.classList.add('text-brand-text', 'hover:text-brand-heading');
+      });
+      tab.classList.add('active-model-tab');
+      tab.classList.remove('text-brand-text', 'hover:text-brand-heading');
+      document.querySelectorAll('.model-panel').forEach(p => p.classList.add('hidden'));
+      $(tab.dataset.modelTab + '-panel')?.classList.remove('hidden');
+    });
+  });
+
+  // ── Auto delivery month ────────────────────────────────────
+
+  $('btn-auto-teslim')?.addEventListener('click', () => {
+    const F = getNum('input-F');
+    const P = getNum('input-P');
+    const n_e = getNum('input-n_e');
+    const plan = buildTaksitPlan();
+    if (!F || !n_e || !plan) return;
+    const t = hesaplaTeslimAyi(F, P, plan, n_e);
+    ($('input-t_teslim') as HTMLInputElement).value = String(t);
+  });
+
+  // ── Build params from form ─────────────────────────────────
+
+  function buildTaksitPlan(): TaksitPlan | null {
+    const tip = getStr('input-taksitPlan');
+    switch (tip) {
+      case 'sabit':
+        return { tip: 'sabit', aylikTutar: getNum('input-aylikTutar') };
+      case 'yillikArtisli':
+        return { tip: 'yillikArtisli', baslangicTutar: getNum('input-baslangicTutar'), yillikArtisOrani: getNum('input-yillikArtisOrani') / 100 };
+      case 'teslimatSonrasiArtisli':
+        return { tip: 'teslimatSonrasiArtisli', teslimOncesiTutar: getNum('input-teslimOncesiTutar'), teslimSonrasiTutar: getNum('input-teslimSonrasiTutar'), yillikArtisOrani: getNum('input-teslimSonrasiArtis') / 100 };
+      case 'manuel': {
+        const raw = (document.getElementById('input-manuelTutarlar') as HTMLTextAreaElement)?.value ?? '';
+        const arr = raw.split(',').map(s => parseTL(s.trim())).filter(n => n > 0);
+        return arr.length ? { tip: 'manuel', aylikTutarlar: arr } : null;
+      }
+      default: return null;
+    }
+  }
+
+  function showError(msg: string) {
+    const el = $('error-message');
+    if (el) { el.textContent = msg; el.classList.remove('hidden'); }
+  }
+
+  function clearError() {
+    const el = $('error-message');
+    if (el) { el.textContent = ''; el.classList.add('hidden'); }
+  }
+
+  function buildCommonParams(): CommonParams | null {
+    const F = getNum('input-F');
+    const P = getNum('input-P');
+    const assetType = getStr('input-assetType') as 'konut' | 'arac';
+
+    if (F < 100_000 || F > 100_000_000) {
+      showError('Konut/araç değeri 100.000 — 100.000.000 TL arasında olmalıdır.');
+      return null;
+    }
+    if (P < 0 || P > F) {
+      showError('Peşinat 0 ile konut değeri arasında olmalıdır.');
+      return null;
+    }
+
+    const common: CommonParams = { F, P, assetType };
+
+    const R_yillik = getNum('input-R_yillik');
+    if (R_yillik > 0) {
+      common.R = yillikToAylik(R_yillik / 100);
+      common.R_mode = getStr('input-R_mode') as any;
+    }
+
+    const r_ev_yillik = getNum('input-r_ev_yillik');
+    if (r_ev_yillik !== 0) common.r_ev = yillikToAylik(r_ev_yillik / 100);
+
+    if (($('toggle-kira') as HTMLInputElement)?.checked) {
+      common.K_0 = getNum('input-K_0');
+      const rk = getNum('input-r_kira_yillik');
+      common.r_kira = rk > 0 ? yillikToAylik(rk / 100) : 0;
+    }
+
+    return common;
+  }
+
+  function buildBankaParams(): BankaParams | null {
+    const r_b_yillik = getNum('input-r_b_yillik');
+    const n_b = getNum('input-n_b');
+
+    if (r_b_yillik < 1 || r_b_yillik > 500) { showError('Banka faiz oranı %1–%500 arasında olmalıdır.'); return null; }
+    if (n_b < 12 || n_b > 360) { showError('Kredi vadesi 12–360 ay arasında olmalıdır.'); return null; }
+
+    const p: BankaParams = { r_b: yillikToAylik(r_b_yillik / 100), n_b };
+
+    if (($('toggle-banka-ek') as HTMLInputElement)?.checked) {
+      p.dosyaMasrafi = getNum('input-dosyaMasrafi');
+      p.ekspertizUcreti = getNum('input-ekspertizUcreti');
+      p.ipotekTesisUcreti = getNum('input-ipotekTesisUcreti');
+      p.bsmvOrani = getNum('input-bsmvOrani') / 100;
+      p.daskYillik = getNum('input-banka-dask');
+      p.konutSigortaYillik = getNum('input-banka-konutSigorta');
+      p.hayatSigortaYillik = getNum('input-banka-hayatSigorta');
+    }
+
+    return p;
+  }
+
+  function buildEvimParams(common: CommonParams): EvimParams | null {
+    const model = getStr('input-evim-model') as 'cekilissiz' | 'cekilisli';
+    const O_oran_pct = getNum('input-O_oran');
+    const n_e = getNum('input-n_e');
+
+    if (O_oran_pct < 5 || O_oran_pct > 15) { showError('Organizasyon ücreti oranı %5–%15 arasında olmalıdır.'); return null; }
+
+    const maxV = common.assetType === 'konut' ? 240 : 120;
+    const minV = common.assetType === 'konut' ? 24 : 12;
+    if (n_e < minV || n_e > maxV) { showError(`Toplam vade ${minV}–${maxV} ay arasında olmalıdır.`); return null; }
+
+    const taksitPlani = buildTaksitPlan();
+    if (!taksitPlani) { showError('Taksit planı bilgilerini doldurun.'); return null; }
+
+    let t_teslim: number;
+    if (model === 'cekilisli') {
+      t_teslim = Math.round((getNum('input-grupBuyuklugu') || 100) / 2);
+    } else {
+      t_teslim = getNum('input-t_teslim');
+      if (!t_teslim) t_teslim = hesaplaTeslimAyi(common.F, common.P, taksitPlani, n_e);
+    }
+
+    if (t_teslim < 1 || t_teslim > n_e) { showError('Teslimat ayı 1 ile toplam vade arasında olmalıdır.'); return null; }
+
+    return {
+      model,
+      O_oran: O_oran_pct / 100,
+      n_e,
+      t_teslim,
+      taksitPlani,
+      orgUcretPesinOrani: Math.max(0.50, getNum('input-orgPesinOran') / 100),
+      orgUcretTaksitSayisi: Math.min(4, getNum('input-orgTaksitSayisi')),
+      kiraDestegi: ($('toggle-kiraDestegi') as HTMLInputElement)?.checked ? getNum('input-kiraDestegi') : undefined,
+    };
+  }
+
+  function buildBirikimParams(t_teslim: number): BirikimParams | null {
+    const r_yillik = getNum('input-r_mevduat_yillik');
+    const stopaj = getNum('input-stopajOrani') / 100;
+    let hedefAy = getNum('input-hedefAy');
+
+    if (r_yillik < 0 || r_yillik > 200) { showError('Yatırım getirisi %0–%200 arasında olmalıdır.'); return null; }
+    if (!hedefAy) hedefAy = t_teslim;
+
+    const brutAylik = yillikToAylik(r_yillik / 100);
+    return { r_mevduat: brutAylik * (1 - stopaj), stopajOrani: stopaj, hedefAy };
+  }
+
+  // ── Results rendering ──────────────────────────────────────
+
+  let lastResults: {
+    banka: ModelSonuc; evim: ModelSonuc; biriktir: ModelSonuc;
+    cekilisli?: CekilisliSonuc; enKarliModel: string;
+  } | null = null;
+
+  let currentCF: 'banka' | 'evim' | 'biriktir' = 'banka';
+  let cfPage = 0;
+  const CF_SIZE = 24;
+
+  const MODEL_META: Record<string, { title: string; subtitle: string; iconBg: string; iconColor: string; svg: string }> = {
+    banka: {
+      title: 'Banka Kredisi',
+      subtitle: 'Faizli kredi ile konut alımı',
+      iconBg: 'bg-blue-100', iconColor: 'text-blue-600',
+      svg: '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18"/><path d="M3 10h18"/><path d="M5 6l7-3l7 3"/><path d="M4 10v11"/><path d="M20 10v11"/><path d="M8 14v3"/><path d="M12 14v3"/><path d="M16 14v3"/></svg>',
+    },
+    evim: {
+      title: 'Evim Sistemi',
+      subtitle: 'Tasarruf finansman sistemi',
+      iconBg: 'bg-teal-100', iconColor: 'text-teal-600',
+      svg: '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l-2 0l9-9l9 9l-2 0"/><path d="M5 12v7a2 2 0 002 2h10a2 2 0 002-2v-7"/><path d="M9 21v-6a2 2 0 012-2h2a2 2 0 012 2v6"/></svg>',
+    },
+    biriktir: {
+      title: 'Kendin Biriktir',
+      subtitle: 'Yatırıma yönlendirip peşin alım',
+      iconBg: 'bg-amber-100', iconColor: 'text-amber-600',
+      svg: '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 11v.01"/><path d="M5.173 8.378a3 3 0 114.656-1.377"/><path d="M16 4v3.803A6.019 6.019 0 0118.658 11h1.341a1 1 0 011 1v2a1 1 0 01-1 1h-1.342a6 6 0 01-1.658 2.473V19.5a1.5 1.5 0 01-3 0v-.583a6 6 0 01-1 .083h-4a6 6 0 01-1-.083v.583a1.5 1.5 0 01-3 0v-2.027A6 6 0 013.063 8.735a3 3 0 012.11-5.357"/></svg>',
+    },
+  };
+
+  function getExtras(key: string, r: ModelSonuc): string[][] {
+    const rows: string[][] = [];
+    if (key === 'banka' && r.toplamFaiz) rows.push(['Toplam Faiz', TL.format(r.toplamFaiz)]);
+    if (key === 'evim') {
+      if (r.toplamOrgUcreti) rows.push(['Org. Ücreti', TL.format(r.toplamOrgUcreti)]);
+      if (r.toplamKira) rows.push(['Toplam Kira', TL.format(r.toplamKira)]);
+    }
+    if (key === 'biriktir') {
+      if (r.birikim) {
+        rows.push(['Birikim', TL.format(r.birikim.toplamBirikim)]);
+        rows.push(['Hedef Değer', TL.format(r.birikim.hedefKonutDegeri)]);
+        rows.push([r.birikim.yeterliMi ? 'Fazla' : 'Eksik', TL.format(Math.abs(r.birikim.fark))]);
+      }
+      if (r.toplamKira) rows.push(['Toplam Kira', TL.format(r.toplamKira)]);
+    }
+    return rows;
+  }
+
+  function renderResults(banka: ModelSonuc, evim: ModelSonuc, biriktir: ModelSonuc, winner: string, cek?: CekilisliSonuc) {
+    lastResults = { banka, evim, biriktir, cekilisli: cek, enKarliModel: winner };
+
+    $('results-section')?.classList.remove('hidden');
+    $('warning-no-discount')?.classList.toggle('hidden', getNum('input-R_yillik') > 0);
+
+    const isCek = getStr('input-evim-model') === 'cekilisli';
+    $('cekilisli-tabs')?.classList.toggle('hidden', !isCek);
+
+    if (isCek) {
+      MODEL_META.evim.subtitle = 'Çekilişli model (beklenen senaryo)';
+    } else {
+      MODEL_META.evim.subtitle = 'Çekilişsiz tasarruf finansman';
+    }
+
+    const grid = $('results-grid')!;
+    grid.innerHTML = '';
+
+    const results: Record<string, ModelSonuc> = { banka, evim, biriktir };
+
+    for (const key of ['banka', 'evim', 'biriktir']) {
+      const m = MODEL_META[key];
+      const r = results[key];
+      const isW = key === winner;
+
+      const extras = getExtras(key, r);
+      let extrasHtml = '';
+      if (extras.length) {
+        extrasHtml = `<div class="space-y-1.5 text-sm border-t border-brand-border-light pt-3 mt-4">${extras.map(([k, v]) => `<div class="flex justify-between"><span class="text-brand-text">${k}</span><span class="font-medium text-brand-heading">${v}</span></div>`).join('')}</div>`;
+      }
+
+      const card = document.createElement('div');
+      card.className = `bg-white border rounded-xl p-5 sm:p-6 shadow-sm hover:shadow-md transition-all relative overflow-hidden ${isW ? 'border-brand-success ring-2 ring-brand-success/30' : 'border-brand-border hover:border-brand-primary/30'}`;
+      card.innerHTML = `
+        ${isW ? '<div class="absolute top-0 right-0"><div class="bg-brand-success text-white text-xs font-bold px-3 py-1 rounded-bl-lg">En Karlı</div></div>' : ''}
+        <div class="flex items-center gap-3 mb-4">
+          <div class="w-10 h-10 rounded-lg ${m.iconBg} ${m.iconColor} flex items-center justify-center shrink-0">${m.svg}</div>
+          <div>
+            <h3 class="font-heading text-base font-semibold text-brand-heading">${m.title}</h3>
+            <p class="text-xs text-brand-text">${m.subtitle}</p>
+          </div>
+        </div>
+        <div class="mb-1">
+          <p class="text-xs text-brand-text mb-0.5">Maliyet (NBD)</p>
+          <p class="font-heading text-2xl sm:text-3xl font-bold ${isW ? 'text-brand-success' : 'text-brand-heading'}" style="font-variant-numeric:tabular-nums">${TL.format(r.maliyetNBD)}</p>
+        </div>
+        <div class="mb-2">
+          <p class="text-xs text-brand-text mb-0.5">Nominal Toplam Ödeme</p>
+          <p class="text-base font-medium text-brand-text" style="font-variant-numeric:tabular-nums">${TL.format(r.toplamOdeme)}</p>
+        </div>
+        ${extrasHtml}
+      `;
+      grid.appendChild(card);
+    }
+
+    $('cashflow-section')?.classList.remove('hidden');
+    $('results-section')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  // ── Cash flow table ────────────────────────────────────────
+
+  function renderCF() {
+    if (!lastResults) return;
+    const data = lastResults[currentCF]?.aylikNakitAkisi;
+    if (!data?.length) return;
+
+    const tbody = $('cashflow-tbody')!;
+    tbody.innerHTML = '';
+
+    const start = cfPage * CF_SIZE;
+    const end = Math.min(start + CF_SIZE, data.length);
+
+    for (let i = start; i < end; i++) {
+      const r = data[i];
+      const tr = document.createElement('tr');
+      tr.className = 'hover:bg-brand-surface/50';
+      tr.innerHTML = `
+        <td class="px-3 py-2 text-xs text-brand-heading">${r.ay}</td>
+        <td class="px-3 py-2 text-xs text-brand-heading text-right">${TL2.format(r.taksit)}</td>
+        <td class="px-3 py-2 text-xs text-brand-heading text-right">${r.kira > 0 ? TL2.format(r.kira) : '-'}</td>
+        <td class="px-3 py-2 text-xs text-brand-heading text-right">${(r.sigortaEkMaliyet + r.orgUcretTaksit) > 0 ? TL2.format(r.sigortaEkMaliyet + r.orgUcretTaksit) : '-'}</td>
+        <td class="px-3 py-2 text-xs font-medium text-brand-heading text-right">${TL2.format(r.toplamCikis)}</td>
+        <td class="px-3 py-2 text-xs text-brand-text text-right">${TL.format(r.kumulatifCikis)}</td>
+        <td class="px-3 py-2 text-xs text-brand-text text-right">${TL2.format(r.indirgenmisDeger)}</td>
+      `;
+      tbody.appendChild(tr);
+    }
+
+    const info = $('cashflow-info');
+    if (info) info.textContent = `${start + 1}–${end} / ${data.length} ay`;
+    ($('cf-prev') as HTMLButtonElement).disabled = cfPage === 0;
+    ($('cf-next') as HTMLButtonElement).disabled = end >= data.length;
+  }
+
+  $('cashflow-toggle')?.addEventListener('click', () => {
+    const content = $('cashflow-content');
+    const chevron = $('cashflow-chevron');
+    const showing = content?.classList.toggle('hidden') === false;
+    chevron?.style.setProperty('transform', showing ? 'rotate(180deg)' : '');
+    if (showing) renderCF();
+  });
+
+  document.querySelectorAll<HTMLButtonElement>('.cf-model-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.cf-model-btn').forEach(b => { b.classList.remove('active-cf-btn'); b.classList.add('text-brand-text', 'hover:text-brand-heading'); });
+      btn.classList.add('active-cf-btn');
+      btn.classList.remove('text-brand-text', 'hover:text-brand-heading');
+      currentCF = btn.dataset.cfModel as any;
+      cfPage = 0;
+      renderCF();
+    });
+  });
+
+  $('cf-prev')?.addEventListener('click', () => { cfPage = Math.max(0, cfPage - 1); renderCF(); });
+  $('cf-next')?.addEventListener('click', () => { cfPage++; renderCF(); });
+
+  // ── Çekilişli scenario tabs ────────────────────────────────
+
+  document.querySelectorAll<HTMLButtonElement>('.senaryo-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.senaryo-btn').forEach(b => { b.classList.remove('active-senaryo-btn'); b.classList.add('text-brand-text', 'hover:text-brand-heading'); });
+      btn.classList.add('active-senaryo-btn');
+      btn.classList.remove('text-brand-text', 'hover:text-brand-heading');
+
+      if (!lastResults?.cekilisli) return;
+      const s = btn.dataset.senaryo as 'enIyi' | 'beklenen' | 'enKotu';
+      const evimR = lastResults.cekilisli[s];
+
+      const all = [
+        { key: 'banka', nbd: lastResults.banka.maliyetNBD },
+        { key: 'evim', nbd: evimR.maliyetNBD },
+        { key: 'biriktir', nbd: lastResults.biriktir.maliyetNBD },
+      ].sort((a, b) => a.nbd - b.nbd);
+
+      renderResults(lastResults.banka, evimR, lastResults.biriktir, all[0].key, lastResults.cekilisli);
+    });
+  });
+
+  // ── Main calculation ───────────────────────────────────────
+
+  $('btn-karsilastir')?.addEventListener('click', () => {
+    clearError();
+
+    const common = buildCommonParams();
+    if (!common) return;
+    const banka = buildBankaParams();
+    if (!banka) return;
+    const evim = buildEvimParams(common);
+    if (!evim) return;
+    const birikimP = buildBirikimParams(evim.t_teslim);
+    if (!birikimP) return;
+
+    try {
+      const bankaR = hesaplaBankaNBD(common, banka);
+
+      let evimR: ModelSonuc;
+      let cekR: CekilisliSonuc | undefined;
+
+      if (evim.model === 'cekilisli') {
+        const grup = getNum('input-grupBuyuklugu') || 100;
+        cekR = hesaplaCekilisliSenaryolar(common, evim, grup);
+        evimR = cekR.beklenen;
+      } else {
+        evimR = hesaplaEvimNBD(common, evim);
+      }
+
+      const biriktirR = hesaplaBirikimNBD(common, evim, birikimP);
+
+      const all = [
+        { key: 'banka', nbd: bankaR.maliyetNBD },
+        { key: 'evim', nbd: evimR.maliyetNBD },
+        { key: 'biriktir', nbd: biriktirR.maliyetNBD },
+      ].sort((a, b) => a.nbd - b.nbd);
+
+      renderResults(bankaR, evimR, biriktirR, all[0].key, cekR);
+
+      cfPage = 0;
+      currentCF = 'banka';
+      document.querySelectorAll('.cf-model-btn').forEach(b => { b.classList.remove('active-cf-btn'); b.classList.add('text-brand-text', 'hover:text-brand-heading'); });
+      document.querySelector('[data-cf-model="banka"]')?.classList.add('active-cf-btn');
+      document.querySelector('[data-cf-model="banka"]')?.classList.remove('text-brand-text', 'hover:text-brand-heading');
+
+    } catch (err: any) {
+      showError(`Hesaplama hatası: ${err.message || 'Bilinmeyen hata'}`);
+      console.error(err);
+    }
+  });
+</script>

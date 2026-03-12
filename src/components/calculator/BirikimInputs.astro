@@ -1,0 +1,64 @@
+---
+---
+
+<div id="biriktir-panel" class="model-panel hidden space-y-4">
+  <!-- Annual Net Return Rate -->
+  <div>
+    <label for="input-r_mevduat_yillik" class="block text-sm font-medium text-brand-heading mb-1.5">
+      Yıllık Net Yatırım Getirisi
+    </label>
+    <div class="relative">
+      <input
+        type="number"
+        id="input-r_mevduat_yillik"
+        step="0.1"
+        min="0"
+        max="200"
+        placeholder="45"
+        class="calc-input w-full rounded-lg border border-brand-border bg-white px-4 py-3 text-base text-brand-heading placeholder:text-gray-400 focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20 focus:outline-none transition-all"
+      />
+      <span class="absolute right-4 top-1/2 -translate-y-1/2 text-sm text-brand-text pointer-events-none">%</span>
+    </div>
+    <p class="mt-1 text-xs text-brand-text">Mevduat, fon vb. yıllık net getiri oranı</p>
+  </div>
+
+  <!-- Withholding Tax Rate -->
+  <div>
+    <label for="input-stopajOrani" class="block text-sm font-medium text-brand-heading mb-1.5">
+      Stopaj Oranı
+    </label>
+    <div class="relative">
+      <input
+        type="number"
+        id="input-stopajOrani"
+        step="1"
+        min="0"
+        max="40"
+        value="15"
+        class="calc-input w-full rounded-lg border border-brand-border bg-white px-4 py-3 text-base text-brand-heading placeholder:text-gray-400 focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20 focus:outline-none transition-all"
+      />
+      <span class="absolute right-4 top-1/2 -translate-y-1/2 text-sm text-brand-text pointer-events-none">%</span>
+    </div>
+    <p class="mt-1 text-xs text-brand-text">TL mevduat varsayılan %15</p>
+  </div>
+
+  <!-- Target Month -->
+  <div>
+    <label for="input-hedefAy" class="block text-sm font-medium text-brand-heading mb-1.5">
+      Hedef Ay
+      <span class="text-brand-text font-normal">(ne zaman almak istiyorsunuz?)</span>
+    </label>
+    <div class="relative">
+      <input
+        type="number"
+        id="input-hedefAy"
+        min="1"
+        max="360"
+        placeholder="Evim teslimat ayı ile aynı"
+        class="calc-input w-full rounded-lg border border-brand-border bg-white px-4 py-3 text-base text-brand-heading placeholder:text-gray-400 focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20 focus:outline-none transition-all"
+      />
+      <span class="absolute right-4 top-1/2 -translate-y-1/2 text-sm text-brand-text pointer-events-none">ay</span>
+    </div>
+    <p class="mt-1 text-xs text-brand-text">Varsayılan: Evim teslimat ayı (t_teslim)</p>
+  </div>
+</div>

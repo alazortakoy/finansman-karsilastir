@@ -1,0 +1,38 @@
+---
+// Template for a single model result card — populated via JS
+---
+
+<template id="tmpl-comparison-card">
+  <div class="comparison-card bg-white border border-brand-border rounded-xl p-5 sm:p-6 shadow-sm hover:shadow-md hover:border-brand-primary/30 transition-all relative overflow-hidden">
+    <!-- Winner badge (hidden by default) -->
+    <div class="winner-badge hidden absolute top-0 right-0">
+      <div class="bg-brand-success text-white text-xs font-bold px-3 py-1 rounded-bl-lg">
+        En Karlı
+      </div>
+    </div>
+
+    <!-- Header -->
+    <div class="flex items-center gap-3 mb-4">
+      <div class="card-icon w-10 h-10 rounded-lg flex items-center justify-center shrink-0"></div>
+      <div>
+        <h3 class="card-title font-heading text-lg font-semibold text-brand-heading"></h3>
+        <p class="card-subtitle text-xs text-brand-text"></p>
+      </div>
+    </div>
+
+    <!-- MaliyetNBD -->
+    <div class="mb-4">
+      <p class="text-xs text-brand-text mb-0.5">Maliyet (NBD)</p>
+      <p class="card-nbd font-heading text-2xl sm:text-3xl font-bold text-brand-heading" style="font-variant-numeric: tabular-nums;"></p>
+    </div>
+
+    <!-- Toplam Ödeme -->
+    <div class="mb-4">
+      <p class="text-xs text-brand-text mb-0.5">Nominal Toplam Ödeme</p>
+      <p class="card-toplam text-base font-medium text-brand-text" style="font-variant-numeric: tabular-nums;"></p>
+    </div>
+
+    <!-- Extra info rows -->
+    <div class="card-extras space-y-2 text-sm border-t border-brand-border-light pt-3"></div>
+  </div>
+</template>

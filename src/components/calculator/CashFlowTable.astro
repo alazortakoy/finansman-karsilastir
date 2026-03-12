@@ -1,0 +1,63 @@
+---
+import { Icon } from 'astro-icon/components';
+---
+
+<section id="cashflow-section" class="hidden mt-6">
+  <button
+    type="button"
+    id="cashflow-toggle"
+    class="flex items-center gap-2 text-sm font-medium text-brand-primary hover:text-brand-secondary transition-colors"
+  >
+    <Icon name="tabler:table" class="w-4 h-4" />
+    <span>Nakit Akışı Tablosu</span>
+    <Icon name="tabler:chevron-down" class="w-4 h-4 transition-transform" id="cashflow-chevron" />
+  </button>
+
+  <div id="cashflow-content" class="hidden mt-4 space-y-4">
+    <!-- Model selector for cashflow -->
+    <div class="flex gap-1.5 bg-brand-surface rounded-lg p-1 overflow-x-auto">
+      <button type="button" data-cf-model="banka" class="cf-model-btn active-cf-btn px-3 py-2 rounded-md text-xs font-medium transition-all whitespace-nowrap">
+        Banka Kredisi
+      </button>
+      <button type="button" data-cf-model="evim" class="cf-model-btn px-3 py-2 rounded-md text-xs font-medium transition-all whitespace-nowrap text-brand-text hover:text-brand-heading">
+        Evim Sistemi
+      </button>
+      <button type="button" data-cf-model="biriktir" class="cf-model-btn px-3 py-2 rounded-md text-xs font-medium transition-all whitespace-nowrap text-brand-text hover:text-brand-heading">
+        Kendin Biriktir
+      </button>
+    </div>
+
+    <!-- Table Container -->
+    <div class="overflow-x-auto rounded-lg border border-brand-border">
+      <table class="w-full text-sm" style="font-variant-numeric: tabular-nums;">
+        <thead>
+          <tr class="bg-brand-surface text-left">
+            <th class="px-3 py-2.5 text-xs font-semibold text-brand-heading whitespace-nowrap">Ay</th>
+            <th class="px-3 py-2.5 text-xs font-semibold text-brand-heading whitespace-nowrap text-right">Taksit</th>
+            <th class="px-3 py-2.5 text-xs font-semibold text-brand-heading whitespace-nowrap text-right">Kira</th>
+            <th class="px-3 py-2.5 text-xs font-semibold text-brand-heading whitespace-nowrap text-right">Ek Maliyet</th>
+            <th class="px-3 py-2.5 text-xs font-semibold text-brand-heading whitespace-nowrap text-right">Toplam</th>
+            <th class="px-3 py-2.5 text-xs font-semibold text-brand-heading whitespace-nowrap text-right">Kümülatif</th>
+            <th class="px-3 py-2.5 text-xs font-semibold text-brand-heading whitespace-nowrap text-right">NBD Katkısı</th>
+          </tr>
+        </thead>
+        <tbody id="cashflow-tbody" class="divide-y divide-brand-border-light">
+          <!-- Rows inserted via JS -->
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Pagination -->
+    <div class="flex items-center justify-between">
+      <p id="cashflow-info" class="text-xs text-brand-text"></p>
+      <div class="flex gap-1.5">
+        <button type="button" id="cf-prev" class="px-3 py-1.5 rounded-md text-xs font-medium bg-brand-surface text-brand-text hover:bg-brand-border transition-colors disabled:opacity-40 disabled:cursor-not-allowed" disabled>
+          Önceki
+        </button>
+        <button type="button" id="cf-next" class="px-3 py-1.5 rounded-md text-xs font-medium bg-brand-surface text-brand-text hover:bg-brand-border transition-colors disabled:opacity-40 disabled:cursor-not-allowed">
+          Sonraki
+        </button>
+      </div>
+    </div>
+  </div>
+</section>

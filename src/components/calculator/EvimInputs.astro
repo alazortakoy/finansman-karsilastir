@@ -1,0 +1,248 @@
+---
+import { Icon } from 'astro-icon/components';
+---
+
+<div id="evim-panel" class="model-panel hidden space-y-4">
+  <!-- Model Selection -->
+  <div>
+    <label class="block text-sm font-medium text-brand-heading mb-2">Evim Modeli</label>
+    <div class="grid grid-cols-2 gap-2 bg-brand-surface rounded-lg p-1">
+      <button
+        type="button"
+        data-evim-model="cekilissiz"
+        class="evim-model-btn active-evim-btn px-4 py-2.5 rounded-md text-sm font-medium transition-all"
+      >
+        Çekilişsiz
+      </button>
+      <button
+        type="button"
+        data-evim-model="cekilisli"
+        class="evim-model-btn px-4 py-2.5 rounded-md text-sm font-medium transition-all text-brand-text hover:text-brand-heading"
+      >
+        Çekilişli
+      </button>
+    </div>
+    <input type="hidden" id="input-evim-model" value="cekilissiz" />
+  </div>
+
+  <!-- Organization Fee Rate -->
+  <div>
+    <label for="input-O_oran" class="block text-sm font-medium text-brand-heading mb-1.5">
+      Organizasyon Ücreti Oranı
+    </label>
+    <div class="relative">
+      <input
+        type="number"
+        id="input-O_oran"
+        step="0.5"
+        min="5"
+        max="15"
+        placeholder="8"
+        class="calc-input w-full rounded-lg border border-brand-border bg-white px-4 py-3 text-base text-brand-heading placeholder:text-gray-400 focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20 focus:outline-none transition-all"
+      />
+      <span class="absolute right-4 top-1/2 -translate-y-1/2 text-sm text-brand-text pointer-events-none">%</span>
+    </div>
+    <p class="mt-1 text-xs text-brand-text">Genellikle %7–10 arası</p>
+  </div>
+
+  <!-- Total Term -->
+  <div>
+    <label for="input-n_e" class="block text-sm font-medium text-brand-heading mb-1.5">
+      Toplam Vade
+    </label>
+    <div class="relative">
+      <input
+        type="number"
+        id="input-n_e"
+        step="12"
+        min="24"
+        max="240"
+        placeholder="120"
+        class="calc-input w-full rounded-lg border border-brand-border bg-white px-4 py-3 text-base text-brand-heading placeholder:text-gray-400 focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20 focus:outline-none transition-all"
+      />
+      <span class="absolute right-4 top-1/2 -translate-y-1/2 text-sm text-brand-text pointer-events-none">ay</span>
+    </div>
+    <p class="mt-1 text-xs text-brand-text" id="hint-n_e">Konut: 24–240 ay / Araç: 12–120 ay</p>
+  </div>
+
+  <!-- Installment Plan -->
+  <div>
+    <label class="block text-sm font-medium text-brand-heading mb-2">Taksit Planı</label>
+    <div class="grid grid-cols-2 gap-1.5 bg-brand-surface rounded-lg p-1">
+      <button type="button" data-taksit-plan="sabit" class="taksit-plan-btn active-taksit-btn px-2 py-2 rounded-md text-xs font-medium transition-all">
+        Sabit
+      </button>
+      <button type="button" data-taksit-plan="yillikArtisli" class="taksit-plan-btn px-2 py-2 rounded-md text-xs font-medium transition-all text-brand-text hover:text-brand-heading">
+        Yıllık Artışlı
+      </button>
+      <button type="button" data-taksit-plan="teslimatSonrasiArtisli" class="taksit-plan-btn px-2 py-2 rounded-md text-xs font-medium transition-all text-brand-text hover:text-brand-heading">
+        Teslim Sonrası
+      </button>
+      <button type="button" data-taksit-plan="manuel" class="taksit-plan-btn px-2 py-2 rounded-md text-xs font-medium transition-all text-brand-text hover:text-brand-heading">
+        Manuel
+      </button>
+    </div>
+    <input type="hidden" id="input-taksitPlan" value="sabit" />
+  </div>
+
+  <!-- Sabit Plan Fields -->
+  <div id="plan-sabit" class="plan-fields space-y-3">
+    <div>
+      <label for="input-aylikTutar" class="block text-xs font-medium text-brand-heading mb-1">Aylık Taksit Tutarı</label>
+      <div class="relative">
+        <input type="text" inputmode="numeric" id="input-aylikTutar" placeholder="55.556" class="calc-input w-full rounded-lg border border-brand-border bg-white px-4 py-2.5 text-sm text-brand-heading placeholder:text-gray-400 focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20 focus:outline-none transition-all" />
+        <span class="absolute right-4 top-1/2 -translate-y-1/2 text-xs text-brand-text pointer-events-none">TL/ay</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Yıllık Artışlı Plan Fields -->
+  <div id="plan-yillikArtisli" class="plan-fields hidden space-y-3">
+    <div>
+      <label for="input-baslangicTutar" class="block text-xs font-medium text-brand-heading mb-1">Başlangıç Taksit Tutarı</label>
+      <div class="relative">
+        <input type="text" inputmode="numeric" id="input-baslangicTutar" placeholder="40.000" class="calc-input w-full rounded-lg border border-brand-border bg-white px-4 py-2.5 text-sm text-brand-heading placeholder:text-gray-400 focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20 focus:outline-none transition-all" />
+        <span class="absolute right-4 top-1/2 -translate-y-1/2 text-xs text-brand-text pointer-events-none">TL/ay</span>
+      </div>
+    </div>
+    <div>
+      <label for="input-yillikArtisOrani" class="block text-xs font-medium text-brand-heading mb-1">Yıllık Artış Oranı</label>
+      <div class="relative">
+        <input type="number" id="input-yillikArtisOrani" step="1" min="0" max="200" placeholder="25" class="calc-input w-full rounded-lg border border-brand-border bg-white px-4 py-2.5 text-sm text-brand-heading placeholder:text-gray-400 focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20 focus:outline-none transition-all" />
+        <span class="absolute right-4 top-1/2 -translate-y-1/2 text-xs text-brand-text pointer-events-none">%</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Teslimat Sonrası Artışlı Plan Fields -->
+  <div id="plan-teslimatSonrasiArtisli" class="plan-fields hidden space-y-3">
+    <div>
+      <label for="input-teslimOncesiTutar" class="block text-xs font-medium text-brand-heading mb-1">Teslim Öncesi Taksit</label>
+      <div class="relative">
+        <input type="text" inputmode="numeric" id="input-teslimOncesiTutar" placeholder="30.000" class="calc-input w-full rounded-lg border border-brand-border bg-white px-4 py-2.5 text-sm text-brand-heading placeholder:text-gray-400 focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20 focus:outline-none transition-all" />
+        <span class="absolute right-4 top-1/2 -translate-y-1/2 text-xs text-brand-text pointer-events-none">TL/ay</span>
+      </div>
+    </div>
+    <div>
+      <label for="input-teslimSonrasiTutar" class="block text-xs font-medium text-brand-heading mb-1">Teslim Sonrası Taksit</label>
+      <div class="relative">
+        <input type="text" inputmode="numeric" id="input-teslimSonrasiTutar" placeholder="70.000" class="calc-input w-full rounded-lg border border-brand-border bg-white px-4 py-2.5 text-sm text-brand-heading placeholder:text-gray-400 focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20 focus:outline-none transition-all" />
+        <span class="absolute right-4 top-1/2 -translate-y-1/2 text-xs text-brand-text pointer-events-none">TL/ay</span>
+      </div>
+    </div>
+    <div>
+      <label for="input-teslimSonrasiArtis" class="block text-xs font-medium text-brand-heading mb-1">Yıllık Artış Oranı</label>
+      <div class="relative">
+        <input type="number" id="input-teslimSonrasiArtis" step="1" min="0" max="200" placeholder="25" class="calc-input w-full rounded-lg border border-brand-border bg-white px-4 py-2.5 text-sm text-brand-heading placeholder:text-gray-400 focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20 focus:outline-none transition-all" />
+        <span class="absolute right-4 top-1/2 -translate-y-1/2 text-xs text-brand-text pointer-events-none">%</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Manuel Plan Fields -->
+  <div id="plan-manuel" class="plan-fields hidden">
+    <div>
+      <label for="input-manuelTutarlar" class="block text-xs font-medium text-brand-heading mb-1">
+        Aylık Tutarlar (virgülle ayırın)
+      </label>
+      <textarea
+        id="input-manuelTutarlar"
+        rows="3"
+        placeholder="50000, 50000, 55000, 55000, ..."
+        class="w-full rounded-lg border border-brand-border bg-white px-4 py-2.5 text-sm text-brand-heading placeholder:text-gray-400 focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20 focus:outline-none transition-all resize-y"
+      ></textarea>
+      <p class="mt-1 text-xs text-brand-text">Her ay için ayrı tutar, toplam vade kadar.</p>
+    </div>
+  </div>
+
+  <!-- Delivery Month -->
+  <div id="teslim-cekilissiz">
+    <label for="input-t_teslim" class="block text-sm font-medium text-brand-heading mb-1.5">
+      Teslimat Ayı
+    </label>
+    <div class="flex items-center gap-3">
+      <div class="relative flex-1">
+        <input
+          type="number"
+          id="input-t_teslim"
+          min="1"
+          max="240"
+          placeholder="Otomatik"
+          class="calc-input w-full rounded-lg border border-brand-border bg-white px-4 py-3 text-base text-brand-heading placeholder:text-gray-400 focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20 focus:outline-none transition-all"
+        />
+        <span class="absolute right-4 top-1/2 -translate-y-1/2 text-sm text-brand-text pointer-events-none">ay</span>
+      </div>
+      <button
+        type="button"
+        id="btn-auto-teslim"
+        class="shrink-0 px-3 py-3 rounded-lg bg-brand-primary-light text-brand-primary text-sm font-medium hover:bg-brand-primary hover:text-white transition-colors"
+        title="Otomatik hesapla"
+      >
+        <Icon name="tabler:calculator" class="w-5 h-5" />
+      </button>
+    </div>
+    <p class="mt-1 text-xs text-brand-text">Boş bırakırsanız otomatik hesaplanır.</p>
+  </div>
+
+  <!-- Çekilişli: Group Size -->
+  <div id="teslim-cekilisli" class="hidden">
+    <label for="input-grupBuyuklugu" class="block text-sm font-medium text-brand-heading mb-1.5">
+      Grup Büyüklüğü
+    </label>
+    <div class="relative">
+      <input
+        type="number"
+        id="input-grupBuyuklugu"
+        min="10"
+        max="500"
+        placeholder="100"
+        class="calc-input w-full rounded-lg border border-brand-border bg-white px-4 py-3 text-base text-brand-heading placeholder:text-gray-400 focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20 focus:outline-none transition-all"
+      />
+      <span class="absolute right-4 top-1/2 -translate-y-1/2 text-sm text-brand-text pointer-events-none">kişi</span>
+    </div>
+    <div class="mt-2 flex items-start gap-2 bg-brand-warning/10 rounded-lg p-2.5">
+      <Icon name="tabler:info-circle" class="w-4 h-4 text-brand-warning shrink-0 mt-0.5" />
+      <p class="text-xs text-brand-text leading-relaxed">
+        Çekilişli modelde teslimat tarihi belirsizdir. Sonuçlar en iyi, beklenen ve en kötü senaryo olarak gösterilir.
+      </p>
+    </div>
+  </div>
+
+  <!-- Rent Support Toggle -->
+  <div class="border-t border-brand-border-light pt-4">
+    <div class="flex items-center justify-between">
+      <label class="text-sm font-medium text-brand-heading">Kira Desteği</label>
+      <label class="relative inline-flex items-center cursor-pointer">
+        <input type="checkbox" id="toggle-kiraDestegi" class="sr-only peer" />
+        <div class="w-9 h-5 bg-gray-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-brand-primary/20 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-brand-primary"></div>
+      </label>
+    </div>
+    <div id="kiraDestegi-panel" class="hidden mt-3">
+      <label for="input-kiraDestegi" class="block text-xs font-medium text-brand-heading mb-1">Aylık Kira Desteği</label>
+      <div class="relative">
+        <input type="text" inputmode="numeric" id="input-kiraDestegi" placeholder="5.000" class="calc-input w-full rounded-lg border border-brand-border bg-white px-4 py-2.5 text-sm text-brand-heading placeholder:text-gray-400 focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20 focus:outline-none transition-all" />
+        <span class="absolute right-4 top-1/2 -translate-y-1/2 text-xs text-brand-text pointer-events-none">TL/ay</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Org Fee Payment Plan -->
+  <div class="border-t border-brand-border-light pt-4 space-y-3">
+    <p class="text-sm font-medium text-brand-heading">Organizasyon Ücreti Ödeme Planı</p>
+    <div class="grid grid-cols-2 gap-3">
+      <div>
+        <label for="input-orgPesinOran" class="block text-xs font-medium text-brand-heading mb-1">Peşin Oran</label>
+        <div class="relative">
+          <input type="number" id="input-orgPesinOran" step="5" min="50" max="100" value="50" class="calc-input w-full rounded-lg border border-brand-border bg-white px-3 py-2 text-sm text-brand-heading placeholder:text-gray-400 focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20 focus:outline-none transition-all" />
+          <span class="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-brand-text pointer-events-none">%</span>
+        </div>
+        <p class="mt-0.5 text-xs text-brand-text">Min %50 (BDDK)</p>
+      </div>
+      <div>
+        <label for="input-orgTaksitSayisi" class="block text-xs font-medium text-brand-heading mb-1">Taksit Sayısı</label>
+        <input type="number" id="input-orgTaksitSayisi" min="0" max="4" value="4" class="calc-input w-full rounded-lg border border-brand-border bg-white px-3 py-2 text-sm text-brand-heading placeholder:text-gray-400 focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20 focus:outline-none transition-all" />
+        <p class="mt-0.5 text-xs text-brand-text">Maks 4 taksit</p>
+      </div>
+    </div>
+  </div>
+</div>
