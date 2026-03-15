@@ -48,8 +48,8 @@ Mevcut calculator tek sayfalık form yapısında. Kullanıcı deneyimini iyileş
 
 ---
 
-## Faz 2: Wizard Altyapısı & Temel Adımlar (Step 1-2)
-> Tek conversation'da tamamlanabilir
+## Faz 2+3: Wizard Altyapısı & Tüm Adımlar (Step 1-5) ✅ TAMAMLANDI
+> Commit: 94b0fa6 — Build başarılı, 144/144 test geçti
 
 ### 2.1 WizardNav.astro Bileşeni (YENİ)
 - Progress bar: 6 adım, aktif adım teal vurgulu
@@ -87,8 +87,7 @@ Mevcut calculator tek sayfalık form yapısında. Kullanıcı deneyimini iyileş
 
 ---
 
-## Faz 3: Model Adımları (Step 3-4-5)
-> Tek conversation'da tamamlanabilir
+## Faz 3: Model Adımları (Step 3-4-5) ✅ Faz 2 ile birlikte tamamlandı
 
 ### 3.1 Step 3: Banka Kredisi (BankaInputs yeniden tasarım)
 - **Yıllık Faiz Oranı:** Default %2.54, açıklama ile
@@ -138,8 +137,7 @@ Mevcut calculator tek sayfalık form yapısında. Kullanıcı deneyimini iyileş
 
 ---
 
-## Faz 4: Sonuçlar & Grafik (Step 6)
-> Tek conversation'da tamamlanabilir
+## Faz 4: Sonuçlar & Grafik (Step 6) ✅ TAMAMLANDI
 
 ### 4.1 Chart.js Entegrasyonu
 - `npm install chart.js` (package.json'a ekle)

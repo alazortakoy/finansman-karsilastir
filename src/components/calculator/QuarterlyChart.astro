@@ -1,0 +1,40 @@
+---
+import { Icon } from 'astro-icon/components';
+---
+
+<div id="quarterly-chart-section" class="hidden mt-6">
+  <div class="bg-white border border-brand-border rounded-xl p-5 sm:p-6 shadow-sm">
+    <div class="flex items-center gap-3 mb-4">
+      <div class="w-10 h-10 rounded-lg bg-brand-primary-light flex items-center justify-center">
+        <Icon name="tabler:chart-bar" class="w-5 h-5 text-brand-primary" />
+      </div>
+      <div>
+        <h3 class="font-heading text-base font-semibold text-brand-heading">Çeyreklik Maliyet Dağılımı</h3>
+        <p class="text-xs text-brand-text">Her çeyrekte ödenen tutarların kategoriye göre dağılımı</p>
+      </div>
+    </div>
+
+    <!-- Model selector tabs for chart -->
+    <div class="flex gap-1.5 bg-brand-surface rounded-lg p-1 mb-4 overflow-x-auto">
+      <button type="button" data-chart-model="banka" class="chart-model-btn active-chart-btn px-3 py-2 rounded-md text-xs font-medium transition-all whitespace-nowrap">
+        Banka Kredisi
+      </button>
+      <button type="button" data-chart-model="evim" class="chart-model-btn px-3 py-2 rounded-md text-xs font-medium transition-all whitespace-nowrap text-brand-text hover:text-brand-heading">
+        Evim Sistemi
+      </button>
+      <button type="button" data-chart-model="biriktir" class="chart-model-btn px-3 py-2 rounded-md text-xs font-medium transition-all whitespace-nowrap text-brand-text hover:text-brand-heading">
+        Kendin Biriktir
+      </button>
+    </div>
+
+    <!-- Chart container -->
+    <div class="relative w-full" style="min-height: 300px; max-height: 420px;">
+      <canvas id="quarterly-chart-canvas"></canvas>
+    </div>
+
+    <!-- Legend -->
+    <div id="chart-legend" class="flex flex-wrap gap-x-4 gap-y-1.5 mt-4 text-xs text-brand-text">
+      <!-- Dynamically populated -->
+    </div>
+  </div>
+</div>

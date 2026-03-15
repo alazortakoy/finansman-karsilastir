@@ -8,6 +8,7 @@ import BankaInputs from '../components/calculator/BankaInputs.astro';
 import EvimInputs from '../components/calculator/EvimInputs.astro';
 import BirikimInputs from '../components/calculator/BirikimInputs.astro';
 import ResultsSummary from '../components/calculator/ResultsSummary.astro';
+import QuarterlyChart from '../components/calculator/QuarterlyChart.astro';
 import CashFlowTable from '../components/calculator/CashFlowTable.astro';
 ---
 
@@ -54,6 +55,7 @@ import CashFlowTable from '../components/calculator/CashFlowTable.astro';
 
           {/* Results */}
           <ResultsSummary />
+          <QuarterlyChart />
           <CashFlowTable />
         </div>
       </div>
@@ -67,7 +69,8 @@ import CashFlowTable from '../components/calculator/CashFlowTable.astro';
   .active-taksit-btn,
   .active-birikim-btn,
   .active-senaryo-btn,
-  .active-cf-btn {
+  .active-cf-btn,
+  .active-chart-btn {
     background-color: #0D9488;
     color: white;
     box-shadow: 0 1px 3px 0 rgb(13 148 136 / 0.3);
@@ -96,8 +99,12 @@ import CashFlowTable from '../components/calculator/CashFlowTable.astro';
     TaksitPlan,
     ModelSonuc,
     BirikimModu,
+    NakitAkisi,
   } from '../lib/engine';
   import type { CekilisliSonuc } from '../lib/engine/cekilisli';
+  import { Chart, BarController, BarElement, CategoryScale, LinearScale, Tooltip, Legend } from 'chart.js';
+
+  Chart.register(BarController, BarElement, CategoryScale, LinearScale, Tooltip, Legend);
 
   // ── Utilities ──────────────────────────────────────────────
 
@@ -672,7 +679,152 @@ import CashFlowTable from '../components/calculator/CashFlowTable.astro';
     }
 
     $('cashflow-section')?.classList.remove('hidden');
+    $('quarterly-chart-section')?.classList.remove('hidden');
+    renderChart('banka');
+    // Reset chart model tabs
+    document.querySelectorAll('.chart-model-btn').forEach(b => { b.classList.remove('active-chart-btn'); b.classList.add('text-brand-text', 'hover:text-brand-heading'); });
+    document.querySelector('[data-chart-model="banka"]')?.classList.add('active-chart-btn');
+    document.querySelector('[data-chart-model="banka"]')?.classList.remove('text-brand-text', 'hover:text-brand-heading');
   }
+
+  // ── Quarterly Chart ────────────────────────────────────────
+
+  interface QuarterData {
+    label: string;
+    taksit: number;
+    kira: number;
+    sigortaEkMaliyet: number;
+    orgUcretTaksit: number;
+  }
+
+  function aggregateQuarters(data: NakitAkisi[]): QuarterData[] {
+    if (!data.length) return [];
+    const quarters: QuarterData[] = [];
+    const startYear = new Date().getFullYear();
+
+    for (let i = 0; i < data.length; i += 3) {
+      const chunk = data.slice(i, i + 3);
+      const qIdx = Math.floor(i / 3);
+      const year = startYear + Math.floor(qIdx / 4);
+      const q = (qIdx % 4) + 1;
+
+      quarters.push({
+        label: `Q${q} ${year}`,
+        taksit: chunk.reduce((s, r) => s + r.taksit, 0),
+        kira: chunk.reduce((s, r) => s + r.kira, 0),
+        sigortaEkMaliyet: chunk.reduce((s, r) => s + r.sigortaEkMaliyet, 0),
+        orgUcretTaksit: chunk.reduce((s, r) => s + r.orgUcretTaksit, 0),
+      });
+    }
+    return quarters;
+  }
+
+  const CHART_COLORS: Record<string, Record<string, { color: string; label: string }>> = {
+    banka: {
+      taksit: { color: '#0D9488', label: 'Taksit (Anapara + Faiz)' },
+      kira: { color: '#F59E0B', label: 'Kira' },
+      sigortaEkMaliyet: { color: '#F43F5E', label: 'BSMV + KKDF + Sigorta' },
+    },
+    evim: {
+      taksit: { color: '#0D9488', label: 'Taksit' },
+      kira: { color: '#F59E0B', label: 'Kira' },
+      orgUcretTaksit: { color: '#8B5CF6', label: 'Organizasyon Ücreti' },
+      sigortaEkMaliyet: { color: '#64748B', label: 'Sigorta / Ek Maliyet' },
+    },
+    biriktir: {
+      taksit: { color: '#0D9488', label: 'Birikim' },
+      kira: { color: '#F59E0B', label: 'Kira' },
+      sigortaEkMaliyet: { color: '#64748B', label: 'Ek Maliyet' },
+    },
+  };
+
+  let chartInstance: Chart | null = null;
+
+  function renderChart(model: 'banka' | 'evim' | 'biriktir') {
+    if (!lastResults) return;
+    const data = lastResults[model]?.aylikNakitAkisi;
+    if (!data?.length) return;
+
+    const quarters = aggregateQuarters(data);
+    const colorMap = CHART_COLORS[model];
+    const keys = Object.keys(colorMap) as (keyof QuarterData)[];
+
+    // Destroy previous chart
+    if (chartInstance) { chartInstance.destroy(); chartInstance = null; }
+
+    const canvas = $('quarterly-chart-canvas') as HTMLCanvasElement;
+    if (!canvas) return;
+
+    const datasets = keys
+      .filter(k => quarters.some(q => (q[k] as number) > 0))
+      .map(k => ({
+        label: colorMap[k].label,
+        data: quarters.map(q => Math.round(q[k] as number)),
+        backgroundColor: colorMap[k].color,
+        borderRadius: 2,
+      }));
+
+    chartInstance = new Chart(canvas, {
+      type: 'bar',
+      data: {
+        labels: quarters.map(q => q.label),
+        datasets,
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        interaction: { mode: 'index', intersect: false },
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              label: (ctx) => `${ctx.dataset.label}: ${TL.format(ctx.parsed.y)}`,
+              footer: (items) => {
+                const total = items.reduce((s, i) => s + i.parsed.y, 0);
+                return `Toplam: ${TL.format(total)}`;
+              },
+            },
+          },
+        },
+        scales: {
+          x: {
+            stacked: true,
+            ticks: { font: { size: 10 }, maxRotation: 45, autoSkip: true, maxTicksLimit: 20 },
+            grid: { display: false },
+          },
+          y: {
+            stacked: true,
+            ticks: {
+              font: { size: 10 },
+              callback: (v) => {
+                const val = v as number;
+                return val >= 1_000_000 ? `${(val / 1_000_000).toFixed(1)}M` : val >= 1_000 ? `${(val / 1_000).toFixed(0)}K` : String(val);
+              },
+            },
+            grid: { color: '#F3F4F6' },
+          },
+        },
+      },
+    });
+
+    // Custom legend
+    const legendEl = $('chart-legend');
+    if (legendEl) {
+      legendEl.innerHTML = datasets.map(ds =>
+        `<span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-sm inline-block" style="background:${ds.backgroundColor}"></span>${ds.label}</span>`
+      ).join('');
+    }
+  }
+
+  // Chart model tab switching
+  document.querySelectorAll<HTMLButtonElement>('.chart-model-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.chart-model-btn').forEach(b => { b.classList.remove('active-chart-btn'); b.classList.add('text-brand-text', 'hover:text-brand-heading'); });
+      btn.classList.add('active-chart-btn');
+      btn.classList.remove('text-brand-text', 'hover:text-brand-heading');
+      renderChart(btn.dataset.chartModel as 'banka' | 'evim' | 'biriktir');
+    });
+  });
 
   // ── Cash flow table ────────────────────────────────────────
 
