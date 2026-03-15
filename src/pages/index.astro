@@ -628,6 +628,7 @@ import CashFlowTable from '../components/calculator/CashFlowTable.astro';
 
     $('results-section')?.classList.remove('hidden');
     $('warning-no-discount')?.classList.toggle('hidden', getNum('input-R_yillik') > 0);
+    $('warning-no-appreciation')?.classList.toggle('hidden', getNum('input-r_ev_yillik') !== 0);
 
     const isCek = getStr('input-evim-model') === 'cekilisli';
     $('cekilisli-tabs')?.classList.toggle('hidden', !isCek);

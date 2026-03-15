@@ -118,14 +118,14 @@ import { Icon } from 'astro-icon/components';
         <div>
           <label for="input-baslangicTutar" class="block text-xs font-medium text-brand-heading mb-1">Başlangıç Taksit Tutarı</label>
           <div class="relative">
-            <input type="text" inputmode="numeric" id="input-baslangicTutar" placeholder="40.000" class="calc-input w-full rounded-lg border border-brand-border bg-white px-4 py-2.5 text-sm text-brand-heading placeholder:text-gray-400 focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20 focus:outline-none transition-all" />
+            <input type="text" inputmode="numeric" id="input-baslangicTutar" placeholder="40.000" class="calc-input w-full rounded-lg border border-brand-border bg-white px-4 py-2.5 text-base text-brand-heading placeholder:text-gray-400 focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20 focus:outline-none transition-all" />
             <span class="absolute right-4 top-1/2 -translate-y-1/2 text-xs text-brand-text pointer-events-none">TL/ay</span>
           </div>
         </div>
         <div>
           <label for="input-yillikArtisOrani" class="block text-xs font-medium text-brand-heading mb-1">Yıllık Artış Oranı</label>
           <div class="relative">
-            <input type="number" id="input-yillikArtisOrani" step="1" min="0" max="200" placeholder="25" class="calc-input w-full rounded-lg border border-brand-border bg-white px-4 py-2.5 text-sm text-brand-heading placeholder:text-gray-400 focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20 focus:outline-none transition-all" />
+            <input type="number" id="input-yillikArtisOrani" step="1" min="0" max="200" placeholder="25" class="calc-input w-full rounded-lg border border-brand-border bg-white px-4 py-2.5 text-base text-brand-heading placeholder:text-gray-400 focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20 focus:outline-none transition-all" />
             <span class="absolute right-4 top-1/2 -translate-y-1/2 text-xs text-brand-text pointer-events-none">%</span>
           </div>
         </div>
@@ -136,21 +136,21 @@ import { Icon } from 'astro-icon/components';
         <div>
           <label for="input-teslimOncesiTutar" class="block text-xs font-medium text-brand-heading mb-1">Teslim Öncesi Taksit</label>
           <div class="relative">
-            <input type="text" inputmode="numeric" id="input-teslimOncesiTutar" placeholder="30.000" class="calc-input w-full rounded-lg border border-brand-border bg-white px-4 py-2.5 text-sm text-brand-heading placeholder:text-gray-400 focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20 focus:outline-none transition-all" />
+            <input type="text" inputmode="numeric" id="input-teslimOncesiTutar" placeholder="30.000" class="calc-input w-full rounded-lg border border-brand-border bg-white px-4 py-2.5 text-base text-brand-heading placeholder:text-gray-400 focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20 focus:outline-none transition-all" />
             <span class="absolute right-4 top-1/2 -translate-y-1/2 text-xs text-brand-text pointer-events-none">TL/ay</span>
           </div>
         </div>
         <div>
           <label for="input-teslimSonrasiTutar" class="block text-xs font-medium text-brand-heading mb-1">Teslim Sonrası Taksit</label>
           <div class="relative">
-            <input type="text" inputmode="numeric" id="input-teslimSonrasiTutar" placeholder="70.000" class="calc-input w-full rounded-lg border border-brand-border bg-white px-4 py-2.5 text-sm text-brand-heading placeholder:text-gray-400 focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20 focus:outline-none transition-all" />
+            <input type="text" inputmode="numeric" id="input-teslimSonrasiTutar" placeholder="70.000" class="calc-input w-full rounded-lg border border-brand-border bg-white px-4 py-2.5 text-base text-brand-heading placeholder:text-gray-400 focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20 focus:outline-none transition-all" />
             <span class="absolute right-4 top-1/2 -translate-y-1/2 text-xs text-brand-text pointer-events-none">TL/ay</span>
           </div>
         </div>
         <div>
           <label for="input-teslimSonrasiArtis" class="block text-xs font-medium text-brand-heading mb-1">Yıllık Artış Oranı</label>
           <div class="relative">
-            <input type="number" id="input-teslimSonrasiArtis" step="1" min="0" max="200" placeholder="25" class="calc-input w-full rounded-lg border border-brand-border bg-white px-4 py-2.5 text-sm text-brand-heading placeholder:text-gray-400 focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20 focus:outline-none transition-all" />
+            <input type="number" id="input-teslimSonrasiArtis" step="1" min="0" max="200" placeholder="25" class="calc-input w-full rounded-lg border border-brand-border bg-white px-4 py-2.5 text-base text-brand-heading placeholder:text-gray-400 focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20 focus:outline-none transition-all" />
             <span class="absolute right-4 top-1/2 -translate-y-1/2 text-xs text-brand-text pointer-events-none">%</span>
           </div>
         </div>
@@ -209,7 +209,7 @@ import { Icon } from 'astro-icon/components';
         <div id="kiraDestegi-panel" class="hidden">
           <label for="input-kiraDestegi" class="block text-xs font-medium text-brand-heading mb-1">Aylık Kira Desteği Tutarı</label>
           <div class="relative">
-            <input type="text" inputmode="numeric" id="input-kiraDestegi" placeholder="5.000" class="calc-input w-full rounded-lg border border-brand-border bg-white px-4 py-2.5 text-sm text-brand-heading placeholder:text-gray-400 focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20 focus:outline-none transition-all" />
+            <input type="text" inputmode="numeric" id="input-kiraDestegi" placeholder="5.000" class="calc-input w-full rounded-lg border border-brand-border bg-white px-4 py-2.5 text-base text-brand-heading placeholder:text-gray-400 focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20 focus:outline-none transition-all" />
             <span class="absolute right-4 top-1/2 -translate-y-1/2 text-xs text-brand-text pointer-events-none">TL/ay</span>
           </div>
           <p class="mt-1 text-xs text-brand-text">Sözleşmenizde belirtilen aylık kira desteği tutarını girin.</p>
@@ -224,14 +224,14 @@ import { Icon } from 'astro-icon/components';
           <div>
             <label for="input-orgPesinOran" class="block text-xs font-medium text-brand-heading mb-1">Peşin Oran</label>
             <div class="relative">
-              <input type="number" id="input-orgPesinOran" step="5" min="50" max="100" value="50" class="calc-input w-full rounded-lg border border-brand-border bg-white px-3 py-2 text-sm text-brand-heading focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20 focus:outline-none transition-all" />
+              <input type="number" id="input-orgPesinOran" step="5" min="50" max="100" value="50" class="calc-input w-full rounded-lg border border-brand-border bg-white px-3 py-2.5 text-base text-brand-heading focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20 focus:outline-none transition-all" />
               <span class="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-brand-text pointer-events-none">%</span>
             </div>
             <p class="mt-0.5 text-[10px] text-brand-text">Min %50 (BDDK)</p>
           </div>
           <div>
             <label for="input-orgTaksitSayisi" class="block text-xs font-medium text-brand-heading mb-1">Taksit Sayısı</label>
-            <input type="number" id="input-orgTaksitSayisi" min="0" max="4" value="4" class="calc-input w-full rounded-lg border border-brand-border bg-white px-3 py-2 text-sm text-brand-heading focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20 focus:outline-none transition-all" />
+            <input type="number" id="input-orgTaksitSayisi" min="0" max="4" value="4" class="calc-input w-full rounded-lg border border-brand-border bg-white px-3 py-2.5 text-base text-brand-heading focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20 focus:outline-none transition-all" />
             <p class="mt-0.5 text-[10px] text-brand-text">Maks 4 taksit</p>
           </div>
         </div>
