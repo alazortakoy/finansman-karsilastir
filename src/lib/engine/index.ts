@@ -5,3 +5,4 @@ export * from './evim';
 export * from './cekilisli';
 export * from './biriktir';
 export * from './karsilastir';
+export * from './defaults';

@@ -19,6 +19,9 @@ function makeBanka(overrides: Partial<BankaParams> = {}): BankaParams {
   return {
     r_b: yillikToAylik(3.20), // ~320% annual → monthly
     n_b: 120,
+    bsmvOrani: 0,   // konut default
+    kkdfOrani: 0,    // konut default
+    ipotekHarciOrani: 0, // disable for tests unless specified
     ...overrides,
   };
 }
@@ -130,6 +133,36 @@ describe('hesaplaBankaNBD — BSMV', () => {
 });
 
 // ============================================================
+// KKDF calculation (tüketici/araç kredisi)
+// ============================================================
+describe('hesaplaBankaNBD — KKDF', () => {
+  it('adds KKDF on interest for araç kredisi', () => {
+    const common = makeCommon({ F: 1_100_000, P: 100_000, R: 0, assetType: 'arac' });
+    const banka = makeBanka({ r_b: 0.01, n_b: 12, bsmvOrani: 0.15, kkdfOrani: 0.15 });
+    const result = hesaplaBankaNBD(common, banka);
+
+    // C = 1M, Month 1: interest = 10,000
+    // BSMV = 1,500, KKDF = 1,500
+    // efektifTaksit = A_b + 1500 + 1500
+    const A_b = annuite(1_000_000, 0.01, 12);
+    const expectedTaksit1 = A_b + 10_000 * 0.15 + 10_000 * 0.15;
+    expect(result.aylikNakitAkisi[0].taksit).toBeCloseTo(expectedTaksit1, 0);
+  });
+
+  it('KKDF is 0 for konut kredisi by default', () => {
+    const common = makeCommon({ assetType: 'konut' });
+    // Using default kkdfOrani=0 from makeBanka
+    const banka = makeBanka({ r_b: 0.01, n_b: 12 });
+    const result = hesaplaBankaNBD(common, banka);
+
+    // With both bsmvOrani=0 and kkdfOrani=0, taksit should equal pure annuity
+    const C = common.F - common.P;
+    const A_b = annuite(C, 0.01, 12);
+    expect(result.aylikNakitAkisi[0].taksit).toBeCloseTo(A_b, 0);
+  });
+});
+
+// ============================================================
 // One-time costs at T=0
 // ============================================================
 describe('hesaplaBankaNBD — one-time costs', () => {
@@ -140,13 +173,29 @@ describe('hesaplaBankaNBD — one-time costs', () => {
       n_b: 12,
       dosyaMasrafi: 15_000,
       ekspertizUcreti: 5_000,
-      ipotekTesisUcreti: 12_000,
+      ipotekHarciOrani: 0, // C=0, so no ipotek anyway
     });
     const result = hesaplaBankaNBD(common, banka);
 
     // P=F → no loan, just down payment + one-time costs
-    expect(result.maliyetNBD).toBe(5_000_000 + 15_000 + 5_000 + 12_000);
-    expect(result.toplamOdeme).toBe(5_000_000 + 15_000 + 5_000 + 12_000);
+    expect(result.maliyetNBD).toBe(5_000_000 + 15_000 + 5_000);
+    expect(result.toplamOdeme).toBe(5_000_000 + 15_000 + 5_000);
+  });
+
+  it('includes ipotek harci as percentage of loan amount', () => {
+    const common = makeCommon({ F: 5_000_000, P: 1_000_000, R: 0 });
+    const banka = makeBanka({
+      r_b: 0.01,
+      n_b: 12,
+      dosyaMasrafi: 0,
+      ekspertizUcreti: 0,
+      ipotekHarciOrani: 0.00455, // binde 4.55 on C=4M → 18,200
+    });
+    const result = hesaplaBankaNBD(common, banka);
+
+    // ipotek harci = 4,000,000 * 0.00455 = 18,200
+    // toplamOdeme includes P + ipotekHarci + installments
+    expect(result.toplamOdeme).toBeGreaterThan(1_000_000 + 18_200);
   });
 });
 

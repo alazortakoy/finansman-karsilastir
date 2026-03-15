@@ -31,6 +31,7 @@ function makeEvim(overrides: Partial<EvimParams> = {}): EvimParams {
 function makeBirikim(overrides: Partial<BirikimParams> = {}): BirikimParams {
   return {
     r_mevduat: yillikToAylik(0.45),
+    mod: 'piyangoKarsilastir',
     hedefAy: 48,
     ...overrides,
   };
@@ -77,16 +78,18 @@ describe('hesaplaBirikimNBD — savings accumulation', () => {
 
     const result = hesaplaBirikimNBD(common, evim, birikim);
 
-    // lumpSum = 100k + 1M*0.10*1.0 = 200k
+    // finansmanTutari = F-P = 900k
+    // lumpSum = P + (F-P)*O_oran*pesinOrani = 100k + 900k*0.10*1.0 = 190k
     // No monthly contributions (taksit=0)
-    // S_mevduat = 200k * (1.02)^12 ≈ 253,648.35
-    const expected = 200_000 * Math.pow(1.02, 12);
+    // S_mevduat = 190k * (1.02)^12 ≈ 240,965.93
+    const lumpSum = 100_000 + 900_000 * 0.10 * 1.0;
+    const expected = lumpSum * Math.pow(1.02, 12);
     expect(result.birikim!.toplamBirikim).toBeCloseTo(expected, 0);
   });
 
   it('accumulates monthly investments', () => {
     const common = makeCommon({ F: 1_000_000, P: 0 });
-    const evim = makeEvim({ O_oran: 0.0, orgUcretPesinOrani: 0.5, taksitPlani: { tip: 'sabit', aylikTutar: 10_000 }, n_e: 120 });
+    const evim = makeEvim({ O_oran: 0.0, orgUcretPesinOrani: 0.50, taksitPlani: { tip: 'sabit', aylikTutar: 10_000 }, n_e: 120 });
     const birikim = makeBirikim({ r_mevduat: 0.01, hedefAy: 12 });
 
     const result = hesaplaBirikimNBD(common, evim, birikim);
@@ -260,5 +263,114 @@ describe('hesaplaBirikimNBD — cumulative cash flow', () => {
       expect(result.aylikNakitAkisi[i].kumulatifCikis)
         .toBeGreaterThanOrEqual(result.aylikNakitAkisi[i - 1].kumulatifCikis);
     }
+  });
+});
+
+// ============================================================
+// ayHesapla mode
+// ============================================================
+describe('hesaplaBirikimNBD — ayHesapla mode', () => {
+  it('finds the month when savings reach asset value', () => {
+    const common = makeCommon({ F: 1_000_000, P: 0, r_ev: 0, R: 0, K_0: 0 });
+    const birikim: BirikimParams = {
+      r_mevduat: 0.01,
+      mod: 'ayHesapla',
+      aylikBirikim: 50_000,
+      aylikBirikimArtisOrani: 0,
+    };
+    const result = hesaplaBirikimNBD(common, makeEvim(), birikim);
+
+    expect(result.birikim!.hesaplananAy).toBeDefined();
+    expect(result.birikim!.hesaplananAy).toBeGreaterThan(0);
+    expect(result.birikim!.yeterliMi).toBe(true);
+  });
+
+  it('inflation-linked increase reaches target faster', () => {
+    const common = makeCommon({ F: 1_000_000, P: 0, r_ev: 0, R: 0, K_0: 0 });
+    const noIncrease: BirikimParams = {
+      r_mevduat: 0.01,
+      mod: 'ayHesapla',
+      aylikBirikim: 30_000,
+      aylikBirikimArtisOrani: 0,
+    };
+    const withIncrease: BirikimParams = {
+      r_mevduat: 0.01,
+      mod: 'ayHesapla',
+      aylikBirikim: 30_000,
+      aylikBirikimArtisOrani: 0.02,
+    };
+
+    const r1 = hesaplaBirikimNBD(common, makeEvim(), noIncrease);
+    const r2 = hesaplaBirikimNBD(common, makeEvim(), withIncrease);
+
+    expect(r2.birikim!.hesaplananAy!).toBeLessThan(r1.birikim!.hesaplananAy!);
+  });
+
+  it('cash flow length equals hesaplananAy', () => {
+    const common = makeCommon({ F: 500_000, P: 0, r_ev: 0, R: 0, K_0: 0 });
+    const birikim: BirikimParams = {
+      r_mevduat: 0.01,
+      mod: 'ayHesapla',
+      aylikBirikim: 50_000,
+    };
+    const result = hesaplaBirikimNBD(common, makeEvim(), birikim);
+    expect(result.aylikNakitAkisi).toHaveLength(result.birikim!.hesaplananAy!);
+  });
+});
+
+// ============================================================
+// tutarHesapla mode
+// ============================================================
+describe('hesaplaBirikimNBD — tutarHesapla mode', () => {
+  it('calculates required monthly amount to reach target', () => {
+    const common = makeCommon({ F: 1_000_000, P: 0, r_ev: 0, R: 0, K_0: 0 });
+    const birikim: BirikimParams = {
+      r_mevduat: 0.01,
+      mod: 'tutarHesapla',
+      hedefAy: 24,
+    };
+    const result = hesaplaBirikimNBD(common, makeEvim(), birikim);
+
+    expect(result.birikim!.gerekliAylikTutar).toBeDefined();
+    expect(result.birikim!.gerekliAylikTutar!).toBeGreaterThan(0);
+    // Savings should reach or exceed target
+    expect(result.birikim!.toplamBirikim).toBeGreaterThanOrEqual(1_000_000 - 1);
+  });
+
+  it('P contribution reduces required monthly amount', () => {
+    const common1 = makeCommon({ F: 1_000_000, P: 0, r_ev: 0, R: 0, K_0: 0 });
+    const common2 = makeCommon({ F: 1_000_000, P: 500_000, r_ev: 0, R: 0, K_0: 0 });
+    const birikim: BirikimParams = {
+      r_mevduat: 0.01,
+      mod: 'tutarHesapla',
+      hedefAy: 24,
+    };
+
+    const r1 = hesaplaBirikimNBD(common1, makeEvim(), birikim);
+    const r2 = hesaplaBirikimNBD(common2, makeEvim(), birikim);
+
+    expect(r2.birikim!.gerekliAylikTutar!).toBeLessThan(r1.birikim!.gerekliAylikTutar!);
+  });
+
+  it('returns 0 monthly when P alone covers target', () => {
+    const common = makeCommon({ F: 100_000, P: 100_000, r_ev: 0, R: 0, K_0: 0 });
+    const birikim: BirikimParams = {
+      r_mevduat: 0.01,
+      mod: 'tutarHesapla',
+      hedefAy: 24,
+    };
+    const result = hesaplaBirikimNBD(common, makeEvim(), birikim);
+    expect(result.birikim!.gerekliAylikTutar).toBe(0);
+  });
+
+  it('cash flow length equals hedefAy', () => {
+    const common = makeCommon({ F: 1_000_000, P: 0, r_ev: 0, R: 0, K_0: 0 });
+    const birikim: BirikimParams = {
+      r_mevduat: 0.01,
+      mod: 'tutarHesapla',
+      hedefAy: 36,
+    };
+    const result = hesaplaBirikimNBD(common, makeEvim(), birikim);
+    expect(result.aylikNakitAkisi).toHaveLength(36);
   });
 });

@@ -58,9 +58,6 @@ export function getTaksit(
       const yilSonrasi = Math.floor((t - t_teslim) / 12);
       return plan.teslimSonrasiTutar * Math.pow(1 + plan.yillikArtisOrani, yilSonrasi);
     }
-
-    case 'manuel':
-      return plan.aylikTutarlar[t - 1] ?? 0;
   }
 }
 
@@ -100,6 +97,16 @@ export function annuite(C: number, r: number, n: number): number {
 export function varlikDegeri(F: number, r_ev: number | undefined, t: number): number {
   if (!r_ev || r_ev === 0) return F;
   return F * Math.pow(1 + r_ev, t);
+}
+
+/**
+ * Calculates the fixed monthly installment for Evim sabit plan.
+ * Simply divides financed amount by term months.
+ * Formula: (F - P) / n_e
+ */
+export function hesaplaSabitTaksit(F: number, P: number, n_e: number): number {
+  if (n_e <= 0) return 0;
+  return (F - P) / n_e;
 }
 
 /**

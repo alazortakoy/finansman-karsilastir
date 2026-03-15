@@ -7,8 +7,6 @@
 
 export type AssetType = 'konut' | 'arac';
 
-export type RMode = 'enflasyon' | 'mevduat' | 'custom';
-
 export interface CommonParams {
   F: number;           // Asset value (TL)
   P: number;           // Down payment (TL) — can be 0
@@ -16,7 +14,6 @@ export interface CommonParams {
 
   // Optional parameters (user toggles on/off)
   R?: number;          // Monthly discount rate (decimal, e.g. 0.025 = 2.5%)
-  R_mode?: RMode;
   r_ev?: number;       // Monthly asset appreciation rate (decimal)
   K_0?: number;        // Current monthly rent (TL) — 0 or undefined = no rent
   r_kira?: number;     // Monthly rent increase rate (decimal)
@@ -31,8 +28,9 @@ export interface BankaParams {
   // One-time costs (all optional, default 0)
   dosyaMasrafi?: number;
   ekspertizUcreti?: number;
-  ipotekTesisUcreti?: number;
-  bsmvOrani?: number;         // Default: 0.05 (5% on interest)
+  ipotekHarciOrani?: number;  // Default: 0.00455 (binde 4.55 on loan amount)
+  bsmvOrani?: number;         // Default: 0.15 for tüketici/araç, 0 for konut (on interest)
+  kkdfOrani?: number;         // Default: 0.15 for tüketici/araç, 0 for konut (on interest)
   daskYillik?: number;
   konutSigortaYillik?: number;
   hayatSigortaYillik?: number;
@@ -50,12 +48,11 @@ export type TaksitPlan =
       teslimOncesiTutar: number;
       teslimSonrasiTutar: number;
       yillikArtisOrani: number;
-    }
-  | { tip: 'manuel'; aylikTutarlar: number[] };
+    };
 
 export interface EvimParams {
   model: EvimModel;
-  O_oran: number;        // Organization fee rate (decimal, e.g. 0.07–0.10)
+  O_oran: number;        // Organization fee rate on financed amount (decimal, e.g. 0.07–0.10)
   n_e: number;           // Total term (months)
   t_teslim: number;      // Delivery month
 
@@ -63,7 +60,6 @@ export interface EvimParams {
 
   // Rent support (optional)
   kiraDestegi?: number;
-  r_kiraDestegi?: number;
 
   // Organization fee payment plan
   orgUcretPesinOrani?: number;   // Default: 0.50 (BDDK min.)
@@ -77,10 +73,22 @@ export interface EvimParams {
 
 // --- 2.4 Self-Save Parameters ---
 
+export type BirikimModu = 'ayHesapla' | 'tutarHesapla' | 'piyangoKarsilastir';
+
 export interface BirikimParams {
-  r_mevduat: number;   // Monthly net investment return rate (decimal)
-  stopajOrani?: number; // Default: 0.15 (15%)
-  hedefAy: number;     // Target month to buy
+  r_mevduat: number;     // Monthly net investment return rate (decimal)
+  stopajOrani?: number;  // Default: 0.15 (15%)
+  mod: BirikimModu;      // Which calculation mode to use
+
+  // For 'ayHesapla': given monthly amount, find how many months to buy
+  aylikBirikim?: number;          // Starting monthly savings amount (TL)
+  aylikBirikimArtisOrani?: number; // Monthly increase rate (inflation-linked, decimal)
+
+  // For 'tutarHesapla': given target month, find required monthly amount
+  hedefAy?: number;               // Target month to buy
+
+  // For 'piyangoKarsilastir': original mode — uses Evim installments as savings
+  // hedefAy is required
 }
 
 // --- 3.5 Lottery Draw Scenarios ---
@@ -106,10 +114,12 @@ export interface NakitAkisi {
 }
 
 export interface BirikimDetay {
-  toplamBirikim: number;    // S_mevduat at target month
-  hedefKonutDegeri: number; // F_hedef
+  toplamBirikim: number;       // S_mevduat at target/calculated month
+  hedefKonutDegeri: number;    // F_hedef at that month
   yeterliMi: boolean;
-  fark: number;             // S_mevduat - F_hedef
+  fark: number;                // S_mevduat - F_hedef
+  hesaplananAy?: number;       // For 'ayHesapla' mode: month when savings >= asset value
+  gerekliAylikTutar?: number;  // For 'tutarHesapla' mode: required starting monthly amount
 }
 
 export interface ModelSonuc {

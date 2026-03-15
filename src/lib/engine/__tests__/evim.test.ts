@@ -62,19 +62,22 @@ describe('hesaplaEvimNBD — output structure', () => {
 // Organization fee
 // ============================================================
 describe('hesaplaEvimNBD — organization fee', () => {
-  it('calculates total org fee correctly', () => {
+  it('calculates total org fee correctly (based on financed amount)', () => {
     const result = hesaplaEvimNBD(makeCommon(), makeEvim());
-    // F=5M, O_oran=0.08 → O_toplam = 400,000
+    // F=5M, P=0, finansmanTutari=5M, O_oran=0.08 → O_toplam = 400,000
     expect(result.toplamOrgUcreti).toBe(400_000);
   });
 
+  it('org fee uses (F-P) not F', () => {
+    const common = makeCommon({ P: 1_000_000 });
+    const result = hesaplaEvimNBD(common, makeEvim());
+    // F=5M, P=1M, finansmanTutari=4M, O_oran=0.08 → O_toplam = 320,000
+    expect(result.toplamOrgUcreti).toBe(320_000);
+  });
+
   it('includes cash org fee in T=0 (via maliyetNBD)', () => {
-    // P=0, O_pesin = 400000 * 0.50 = 200,000
-    // With R=0, we can verify T=0 outflow
+    // P=0, finansmanTutari=5M, O_pesin = 400000 * 1.0 = 400,000
     const common = makeCommon({ R: 0 });
-    const evim = makeEvim({ orgUcretTaksitSayisi: 0 });
-    // orgUcretTaksitSayisi=0 → all org fee is cash at T=0
-    // Actually with sayisi=0 the O_taksit calculation needs orgUcretPesinOrani=1
     const evim2 = makeEvim({ orgUcretPesinOrani: 1.0, orgUcretTaksitSayisi: 0 });
     const result = hesaplaEvimNBD(common, evim2);
 
@@ -247,7 +250,7 @@ describe('hesaplaEvimNBD — waiting cost adjustment', () => {
     // beklemeFarki = F/(1+0)^48 - F = F - F = 0
     // So maliyetNBD should equal sum of all cash flows + T=0
     const sumCashFlows = result.aylikNakitAkisi.reduce((s, e) => s + e.toplamCikis, 0);
-    const expectedNBD = (common.P + common.F * evim.O_oran * 0.5) + sumCashFlows;
+    const expectedNBD = (common.P + (common.F - common.P) * evim.O_oran * 0.5) + sumCashFlows;
     expect(result.maliyetNBD).toBeCloseTo(expectedNBD, 0);
   });
 
@@ -278,7 +281,7 @@ describe('hesaplaEvimNBD — waiting cost adjustment', () => {
     const expectedBeklemeFarki = indirge(F_teslim, R, 24) - 5_000_000;
 
     // maliyetNBD = T0 + sum(discounted cash flows) + beklemeFarki
-    const T0 = common.P + 5_000_000 * 0.08 * 0.50;
+    const T0 = common.P + (5_000_000 - common.P) * 0.08 * 0.50;
     const sumDiscounted = result.aylikNakitAkisi.reduce((s, e) => s + e.indirgenmisDeger, 0);
     const expectedNBD = T0 + sumDiscounted + expectedBeklemeFarki;
 

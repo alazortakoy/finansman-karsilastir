@@ -29,7 +29,7 @@ function makeBanka(overrides: Partial<BankaParams> = {}): BankaParams {
     bsmvOrani: 0.05,
     dosyaMasrafi: 15_000,
     ekspertizUcreti: 5_000,
-    ipotekTesisUcreti: 12_000,
+    ipotekHarciOrani: 0,
     ...overrides,
   };
 }
@@ -50,6 +50,7 @@ function makeEvim(overrides: Partial<EvimParams> = {}): EvimParams {
 function makeBirikim(overrides: Partial<BirikimParams> = {}): BirikimParams {
   return {
     r_mevduat: yillikToAylik(0.45),
+    mod: 'piyangoKarsilastir',
     hedefAy: 48,
     ...overrides,
   };
@@ -138,7 +139,7 @@ describe('karsilastir — enKarliModel selection', () => {
 describe('integration — R=0 no discounting', () => {
   it('all models: maliyetNBD ≈ toplamOdeme when R=0 and no asset adjustment', () => {
     const common = makeCommon({ R: 0, r_ev: 0, K_0: 0 });
-    const banka = makeBanka({ bsmvOrani: 0.05, dosyaMasrafi: 0, ekspertizUcreti: 0, ipotekTesisUcreti: 0 });
+    const banka = makeBanka({ bsmvOrani: 0.05, dosyaMasrafi: 0, ekspertizUcreti: 0, ipotekHarciOrani: 0 });
     const evim = makeEvim();
 
     const bankaResult = hesaplaBankaNBD(common, banka);
@@ -156,21 +157,22 @@ describe('integration — R=0 no discounting', () => {
 describe('integration — P = F edge case', () => {
   it('banka: no loan, maliyetNBD = F + one-time costs', () => {
     const common = makeCommon({ F: 5_000_000, P: 5_000_000, R: 0, r_ev: 0, K_0: 0 });
-    const banka = makeBanka({ dosyaMasrafi: 10_000, ekspertizUcreti: 5_000, ipotekTesisUcreti: 0 });
+    const banka = makeBanka({ dosyaMasrafi: 10_000, ekspertizUcreti: 5_000, ipotekHarciOrani: 0 });
     const result = hesaplaBankaNBD(common, banka);
 
     expect(result.maliyetNBD).toBe(5_015_000);
     expect(result.toplamFaiz).toBe(0);
   });
 
-  it('evim: full down payment, only org fee and installments', () => {
+  it('evim: full down payment, org fee based on financed amount (0)', () => {
     const common = makeCommon({ F: 5_000_000, P: 5_000_000, R: 0, r_ev: 0, K_0: 0 });
     const evim = makeEvim();
     const result = hesaplaEvimNBD(common, evim);
 
-    // O_toplam = 400k included in cost
-    expect(result.toplamOrgUcreti).toBe(400_000);
-    expect(result.maliyetNBD).toBeGreaterThan(5_000_000);
+    // finansmanTutari = F-P = 0, so O_toplam = 0
+    expect(result.toplamOrgUcreti).toBe(0);
+    // maliyetNBD = P + installments (taksit plan still runs for n_e months)
+    expect(result.maliyetNBD).toBeGreaterThanOrEqual(5_000_000);
   });
 });
 
@@ -198,7 +200,7 @@ describe('integration — SPEC 9.1 full scenario', () => {
       n_b: 120,
       dosyaMasrafi: 15_000,
       ekspertizUcreti: 5_000,
-      ipotekTesisUcreti: 12_000,
+      ipotekHarciOrani: 0,
       bsmvOrani: 0.05,
     };
 
@@ -214,6 +216,7 @@ describe('integration — SPEC 9.1 full scenario', () => {
 
     const birikim: BirikimParams = {
       r_mevduat: yillikToAylik(0.45),
+      mod: 'piyangoKarsilastir',
       hedefAy: 48,
     };
 
@@ -227,7 +230,7 @@ describe('integration — SPEC 9.1 full scenario', () => {
     // Banka total payment must exceed F (interest-bearing)
     expect(result.banka.toplamOdeme).toBeGreaterThan(5_000_000);
 
-    // Evim has org fee
+    // Evim has org fee (based on F-P = 5M, O_oran=0.08 → 400k)
     expect(result.evim.toplamOrgUcreti).toBe(400_000);
 
     // Biriktir has birikim detail

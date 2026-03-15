@@ -33,8 +33,9 @@ export function hesaplaEvimNBD(
     hayatSigortaYillik = 0,
   } = evim;
 
-  // Step 1: Organization fee
-  const O_toplam = F * O_oran;
+  // Step 1: Organization fee (based on financed amount, not total asset value)
+  const finansmanTutari = F - P;
+  const O_toplam = finansmanTutari * O_oran;
   const O_pesin = O_toplam * orgUcretPesinOrani;
   const orgTaksitSayisi = orgUcretTaksitSayisi > 0 ? orgUcretTaksitSayisi : 0;
   const O_taksit = orgTaksitSayisi > 0

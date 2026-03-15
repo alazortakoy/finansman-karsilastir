@@ -9,6 +9,7 @@ import {
   annuite,
   varlikDegeri,
   hesaplaTeslimAyi,
+  hesaplaSabitTaksit,
 } from '../helpers';
 import type { TaksitPlan } from '../types';
 
@@ -168,26 +169,6 @@ describe('getTaksit — teslimatSonrasiArtisli', () => {
 });
 
 // ============================================================
-// getTaksit — manuel plan
-// ============================================================
-describe('getTaksit — manuel', () => {
-  const plan: TaksitPlan = {
-    tip: 'manuel',
-    aylikTutarlar: [10_000, 20_000, 30_000],
-  };
-
-  it('returns the indexed amount', () => {
-    expect(getTaksit(plan, 1, 3)).toBe(10_000);
-    expect(getTaksit(plan, 2, 3)).toBe(20_000);
-    expect(getTaksit(plan, 3, 3)).toBe(30_000);
-  });
-
-  it('returns 0 for months beyond the array', () => {
-    expect(getTaksit(plan, 4, 5)).toBe(0);
-  });
-});
-
-// ============================================================
 // getKira
 // ============================================================
 describe('getKira', () => {
@@ -281,6 +262,27 @@ describe('varlikDegeri', () => {
     // 5M * (0.99)^12 ≈ 4,431,924.36
     const value = varlikDegeri(5_000_000, -0.01, 12);
     expect(value).toBeCloseTo(4_431_924.36, 0);
+  });
+});
+
+// ============================================================
+// hesaplaSabitTaksit
+// ============================================================
+describe('hesaplaSabitTaksit', () => {
+  it('divides financed amount by term', () => {
+    expect(hesaplaSabitTaksit(5_000_000, 1_000_000, 120)).toBeCloseTo(33_333.33, 0);
+  });
+
+  it('returns full amount per month when n_e=1', () => {
+    expect(hesaplaSabitTaksit(1_000_000, 0, 1)).toBe(1_000_000);
+  });
+
+  it('returns 0 when n_e is 0', () => {
+    expect(hesaplaSabitTaksit(1_000_000, 0, 0)).toBe(0);
+  });
+
+  it('handles P = F', () => {
+    expect(hesaplaSabitTaksit(5_000_000, 5_000_000, 120)).toBe(0);
   });
 });
 
