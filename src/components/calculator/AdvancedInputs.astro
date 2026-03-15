@@ -1,0 +1,104 @@
+---
+import { Icon } from 'astro-icon/components';
+---
+
+<div id="wizard-step-2" class="wizard-step hidden">
+  <div class="bg-white border border-brand-border rounded-xl p-5 sm:p-6 shadow-sm">
+    <div class="flex items-center gap-3 mb-2">
+      <div class="w-8 h-8 rounded-lg bg-brand-primary text-white flex items-center justify-center text-sm font-bold shrink-0">2</div>
+      <h2 class="font-heading text-lg font-semibold text-brand-heading">Gelişmiş Ayarlar</h2>
+    </div>
+    <p class="text-sm text-brand-text mb-6">Bu değerler aylık olarak güncellenir. İsterseniz değiştirebilirsiniz.</p>
+
+    <div class="space-y-6">
+      <!-- Discount Rate (Single Input) -->
+      <div>
+        <label for="input-R_yillik" class="block text-sm font-medium text-brand-heading mb-1">
+          Yıllık Bileşik Faiz Oranı (İskonto)
+        </label>
+        <p class="text-xs text-brand-text mb-2">
+          Paranızı bankada değerlendirseniz yıllık ne kazanırdınız? Bu oran tüm modellerde paranın zaman değerini hesaplamak için kullanılır.
+        </p>
+        <div class="relative">
+          <input
+            type="number"
+            id="input-R_yillik"
+            step="0.1"
+            min="0"
+            max="500"
+            value="30"
+            class="calc-input w-full rounded-lg border border-brand-border bg-white px-4 py-3 text-base text-brand-heading placeholder:text-gray-400 focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20 focus:outline-none transition-all"
+          />
+          <span class="absolute right-4 top-1/2 -translate-y-1/2 text-sm text-brand-text pointer-events-none">%</span>
+        </div>
+        <p class="mt-1 text-xs text-brand-text">0 girilirse paranın zaman değeri hesaba katılmaz (nominal karşılaştırma).</p>
+      </div>
+
+      <!-- Asset Appreciation Rate -->
+      <div>
+        <label for="input-r_ev_yillik" class="block text-sm font-medium text-brand-heading mb-1">
+          Yıllık Konut/Araç Değer Artışı
+        </label>
+        <p class="text-xs text-brand-text mb-2">
+          Konut/araç değerinin yıllık ne kadar artacağını tahmin ediyorsunuz? Bu oran, beklerken varlığın değer kazanmasını hesaba katar.
+        </p>
+        <div class="relative">
+          <input
+            type="number"
+            id="input-r_ev_yillik"
+            step="0.1"
+            min="-20"
+            max="300"
+            value="30"
+            class="calc-input w-full rounded-lg border border-brand-border bg-white px-4 py-3 text-base text-brand-heading placeholder:text-gray-400 focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20 focus:outline-none transition-all"
+          />
+          <span class="absolute right-4 top-1/2 -translate-y-1/2 text-sm text-brand-text pointer-events-none">%</span>
+        </div>
+        <p class="mt-1 text-xs text-brand-text">0 girilirse konut değerinin sabit kaldığı varsayılır.</p>
+      </div>
+
+      <!-- Rent -->
+      <div class="border-t border-brand-border-light pt-5">
+        <div class="flex items-center justify-between mb-1">
+          <label class="text-sm font-medium text-brand-heading">Kira Gideri</label>
+          <label class="relative inline-flex items-center cursor-pointer">
+            <input type="checkbox" id="toggle-kira" class="sr-only peer" />
+            <div class="w-9 h-5 bg-gray-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-brand-primary/20 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-brand-primary"></div>
+          </label>
+        </div>
+        <p class="text-xs text-brand-text mb-3">Eve sahip olana kadar kira ödemeye devam edeceksiniz. Bu tutar karşılaştırmada dikkate alınır.</p>
+
+        <div id="kira-panel" class="hidden space-y-3 bg-brand-surface rounded-lg p-4 border border-brand-border-light">
+          <div>
+            <label for="input-K_0" class="block text-xs font-medium text-brand-heading mb-1">Aylık Kira Tutarı</label>
+            <div class="relative">
+              <input
+                type="text"
+                inputmode="numeric"
+                id="input-K_0"
+                placeholder="25.000"
+                class="calc-input w-full rounded-lg border border-brand-border bg-white px-4 py-2.5 text-sm text-brand-heading placeholder:text-gray-400 focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20 focus:outline-none transition-all"
+              />
+              <span class="absolute right-4 top-1/2 -translate-y-1/2 text-xs text-brand-text pointer-events-none">TL/ay</span>
+            </div>
+          </div>
+          <div>
+            <label for="input-r_kira_yillik" class="block text-xs font-medium text-brand-heading mb-1">Yıllık Kira Artış Oranı</label>
+            <div class="relative">
+              <input
+                type="number"
+                id="input-r_kira_yillik"
+                step="1"
+                min="0"
+                max="200"
+                value="30"
+                class="calc-input w-full rounded-lg border border-brand-border bg-white px-4 py-2.5 text-sm text-brand-heading placeholder:text-gray-400 focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20 focus:outline-none transition-all"
+              />
+              <span class="absolute right-4 top-1/2 -translate-y-1/2 text-xs text-brand-text pointer-events-none">%</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

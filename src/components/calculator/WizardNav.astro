@@ -1,0 +1,62 @@
+---
+const steps = [
+  { num: 1, label: 'Temel Bilgiler', shortLabel: 'Temel' },
+  { num: 2, label: 'Gelişmiş Ayarlar', shortLabel: 'Ayarlar' },
+  { num: 3, label: 'Banka Kredisi', shortLabel: 'Banka' },
+  { num: 4, label: 'Evim Sistemi', shortLabel: 'Evim' },
+  { num: 5, label: 'Kendin Biriktir', shortLabel: 'Biriktir' },
+  { num: 6, label: 'Sonuçlar', shortLabel: 'Sonuç' },
+];
+---
+
+<nav id="wizard-nav" class="mb-6 sm:mb-8">
+  <!-- Progress Bar -->
+  <div class="flex items-center justify-between mb-4">
+    {steps.map((step, i) => (
+      <div class="flex items-center flex-1" data-wizard-step-indicator={step.num}>
+        <div class="flex flex-col items-center flex-1">
+          <div
+            class:list={[
+              'wizard-step-circle w-8 h-8 sm:w-9 sm:h-9 rounded-full flex items-center justify-center text-xs sm:text-sm font-bold transition-all',
+              i === 0
+                ? 'bg-brand-primary text-white shadow-md shadow-brand-primary/30'
+                : 'bg-brand-surface text-brand-text border border-brand-border',
+            ]}
+          >
+            {step.num}
+          </div>
+          <span
+            class:list={[
+              'wizard-step-label mt-1.5 text-[10px] sm:text-xs font-medium text-center transition-colors leading-tight',
+              i === 0 ? 'text-brand-primary' : 'text-brand-text/60',
+            ]}
+          >
+            <span class="hidden sm:inline">{step.label}</span>
+            <span class="sm:hidden">{step.shortLabel}</span>
+          </span>
+        </div>
+        {i < steps.length - 1 && (
+          <div class="wizard-step-line flex-1 h-0.5 bg-brand-border mx-1 sm:mx-2 -mt-5 sm:-mt-5 transition-colors" />
+        )}
+      </div>
+    ))}
+  </div>
+
+  <!-- Navigation Buttons -->
+  <div class="flex gap-3">
+    <button
+      type="button"
+      id="wizard-prev"
+      class="hidden flex-1 sm:flex-none px-5 py-3 rounded-xl border border-brand-border text-brand-heading font-medium text-sm hover:bg-brand-surface active:scale-[0.98] transition-all"
+    >
+      Geri
+    </button>
+    <button
+      type="button"
+      id="wizard-next"
+      class="flex-1 px-5 py-3 rounded-xl bg-brand-primary text-white font-heading font-semibold text-sm shadow-md shadow-brand-primary/25 hover:bg-brand-secondary hover:shadow-lg active:scale-[0.98] transition-all"
+    >
+      Devam Et
+    </button>
+  </div>
+</nav>

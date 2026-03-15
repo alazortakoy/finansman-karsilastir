@@ -5,8 +5,8 @@ Mevcut calculator tek sayfalık form yapısında. Kullanıcı deneyimini iyileş
 
 ---
 
-## Faz 1: Engine Güncellemeleri
-> Tek conversation'da tamamlanabilir
+## Faz 1: Engine Güncellemeleri ✅ TAMAMLANDI
+> Commit: 5632d4b — 144/144 test geçti
 
 ### 1.1 types.ts Güncellemeleri
 - `BankaEkMaliyetler`'e `kkdfOrani` alanı ekle (number, default konut=0, araç=0.15)

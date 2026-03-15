@@ -2,178 +2,79 @@
 import { Icon } from 'astro-icon/components';
 ---
 
-<section class="space-y-6">
-  <!-- Asset Type Toggle -->
-  <div>
-    <label class="block text-sm font-medium text-brand-heading mb-2">Varlık Tipi</label>
-    <div class="grid grid-cols-2 gap-2 bg-brand-surface rounded-lg p-1">
-      <button
-        type="button"
-        data-asset="konut"
-        class="asset-type-btn active-asset-btn px-4 py-2.5 rounded-md text-sm font-medium transition-all"
-      >
-        <Icon name="tabler:home" class="w-4 h-4 inline-block mr-1.5 -mt-0.5" />
-        Konut
-      </button>
-      <button
-        type="button"
-        data-asset="arac"
-        class="asset-type-btn px-4 py-2.5 rounded-md text-sm font-medium transition-all text-brand-text hover:text-brand-heading"
-      >
-        <Icon name="tabler:car" class="w-4 h-4 inline-block mr-1.5 -mt-0.5" />
-        Araç
-      </button>
+<div id="wizard-step-1" class="wizard-step">
+  <div class="bg-white border border-brand-border rounded-xl p-5 sm:p-6 shadow-sm">
+    <div class="flex items-center gap-3 mb-2">
+      <div class="w-8 h-8 rounded-lg bg-brand-primary text-white flex items-center justify-center text-sm font-bold shrink-0">1</div>
+      <h2 class="font-heading text-lg font-semibold text-brand-heading">Temel Bilgiler</h2>
     </div>
-    <input type="hidden" id="input-assetType" value="konut" />
-  </div>
+    <p class="text-sm text-brand-text mb-6">Almayı düşündüğünüz konut veya aracın temel bilgilerini girin.</p>
 
-  <!-- Asset Value -->
-  <div>
-    <label for="input-F" class="block text-sm font-medium text-brand-heading mb-1.5">
-      Konut / Araç Değeri
-    </label>
-    <div class="relative">
-      <input
-        type="text"
-        inputmode="numeric"
-        id="input-F"
-        placeholder="5.000.000"
-        class="calc-input w-full rounded-lg border border-brand-border bg-white px-4 py-3 text-base text-brand-heading placeholder:text-gray-400 focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20 focus:outline-none transition-all"
-      />
-      <span class="absolute right-4 top-1/2 -translate-y-1/2 text-sm text-brand-text pointer-events-none">TL</span>
-    </div>
-    <p class="mt-1 text-xs text-brand-text" id="hint-F">Min: 100.000 — Maks: 100.000.000 TL</p>
-  </div>
-
-  <!-- Down Payment -->
-  <div>
-    <label for="input-P" class="block text-sm font-medium text-brand-heading mb-1.5">
-      Peşinat
-      <span class="text-brand-text font-normal">(opsiyonel)</span>
-    </label>
-    <div class="relative">
-      <input
-        type="text"
-        inputmode="numeric"
-        id="input-P"
-        placeholder="0"
-        value="0"
-        class="calc-input w-full rounded-lg border border-brand-border bg-white px-4 py-3 text-base text-brand-heading placeholder:text-gray-400 focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20 focus:outline-none transition-all"
-      />
-      <span class="absolute right-4 top-1/2 -translate-y-1/2 text-sm text-brand-text pointer-events-none">TL</span>
-    </div>
-  </div>
-
-  <!-- Advanced Settings Toggle -->
-  <div class="border-t border-brand-border-light pt-4">
-    <button
-      type="button"
-      id="advanced-toggle"
-      class="flex items-center gap-2 text-sm font-medium text-brand-primary hover:text-brand-secondary transition-colors"
-    >
-      <Icon name="tabler:adjustments-horizontal" class="w-4 h-4" />
-      <span>Gelişmiş Ayarlar</span>
-      <Icon name="tabler:chevron-down" class="w-4 h-4 transition-transform" id="advanced-chevron" />
-    </button>
-  </div>
-
-  <!-- Advanced Settings Panel (hidden by default) -->
-  <div id="advanced-panel" class="hidden space-y-5 bg-brand-surface rounded-lg p-4 sm:p-5 border border-brand-border-light">
-    <!-- Discount Rate -->
-    <div>
-      <label class="block text-sm font-medium text-brand-heading mb-2">İskonto Oranı Modu</label>
-      <div class="grid grid-cols-3 gap-1.5 bg-white rounded-lg p-1 border border-brand-border-light">
-        <button type="button" data-rmode="enflasyon" class="rmode-btn px-2 py-2 rounded-md text-xs font-medium transition-all text-brand-text hover:text-brand-heading">
-          Enflasyon
-        </button>
-        <button type="button" data-rmode="mevduat" class="rmode-btn active-rmode-btn px-2 py-2 rounded-md text-xs font-medium transition-all">
-          Mevduat
-        </button>
-        <button type="button" data-rmode="custom" class="rmode-btn px-2 py-2 rounded-md text-xs font-medium transition-all text-brand-text hover:text-brand-heading">
-          Özel
-        </button>
+    <div class="space-y-6">
+      <!-- Asset Type Toggle -->
+      <div>
+        <label class="block text-sm font-medium text-brand-heading mb-1.5">Ne almak istiyorsunuz?</label>
+        <p class="text-xs text-brand-text mb-2">Varlık tipine göre vergi oranları ve vade seçenekleri değişir.</p>
+        <div class="grid grid-cols-2 gap-2 bg-brand-surface rounded-lg p-1">
+          <button
+            type="button"
+            data-asset="konut"
+            class="asset-type-btn active-asset-btn px-4 py-3 rounded-md text-sm font-medium transition-all"
+          >
+            <Icon name="tabler:home" class="w-4 h-4 inline-block mr-1.5 -mt-0.5" />
+            Konut
+          </button>
+          <button
+            type="button"
+            data-asset="arac"
+            class="asset-type-btn px-4 py-3 rounded-md text-sm font-medium transition-all text-brand-text hover:text-brand-heading"
+          >
+            <Icon name="tabler:car" class="w-4 h-4 inline-block mr-1.5 -mt-0.5" />
+            Araç
+          </button>
+        </div>
+        <input type="hidden" id="input-assetType" value="konut" />
       </div>
-      <input type="hidden" id="input-R_mode" value="mevduat" />
-    </div>
 
-    <div>
-      <label for="input-R_yillik" class="block text-sm font-medium text-brand-heading mb-1.5">
-        Yıllık İskonto Oranı
-      </label>
-      <div class="relative">
-        <input
-          type="number"
-          id="input-R_yillik"
-          step="0.1"
-          min="1"
-          max="500"
-          placeholder="40"
-          class="calc-input w-full rounded-lg border border-brand-border bg-white px-4 py-3 text-base text-brand-heading placeholder:text-gray-400 focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20 focus:outline-none transition-all"
-        />
-        <span class="absolute right-4 top-1/2 -translate-y-1/2 text-sm text-brand-text pointer-events-none">%</span>
-      </div>
-      <p class="mt-1 text-xs text-brand-text">Paranın zaman değerini yansıtır. Boş bırakılırsa nominal hesaplama yapılır.</p>
-    </div>
-
-    <!-- Asset Appreciation Rate -->
-    <div>
-      <label for="input-r_ev_yillik" class="block text-sm font-medium text-brand-heading mb-1.5">
-        Yıllık Konut/Araç Değer Artışı
-        <span class="text-brand-text font-normal">(opsiyonel)</span>
-      </label>
-      <div class="relative">
-        <input
-          type="number"
-          id="input-r_ev_yillik"
-          step="0.1"
-          min="-20"
-          max="300"
-          placeholder="30"
-          class="calc-input w-full rounded-lg border border-brand-border bg-white px-4 py-3 text-base text-brand-heading placeholder:text-gray-400 focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20 focus:outline-none transition-all"
-        />
-        <span class="absolute right-4 top-1/2 -translate-y-1/2 text-sm text-brand-text pointer-events-none">%</span>
-      </div>
-    </div>
-
-    <!-- Rent -->
-    <div class="space-y-3">
-      <div class="flex items-center justify-between">
-        <label class="text-sm font-medium text-brand-heading">Kira Gideri</label>
-        <label class="relative inline-flex items-center cursor-pointer">
-          <input type="checkbox" id="toggle-kira" class="sr-only peer" />
-          <div class="w-9 h-5 bg-gray-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-brand-primary/20 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-brand-primary"></div>
+      <!-- Asset Value -->
+      <div>
+        <label for="input-F" class="block text-sm font-medium text-brand-heading mb-1">
+          Konut / Araç Değeri
         </label>
-      </div>
-      <div id="kira-panel" class="hidden space-y-3">
-        <div>
-          <label for="input-K_0" class="block text-xs font-medium text-brand-heading mb-1">Aylık Kira</label>
-          <div class="relative">
-            <input
-              type="text"
-              inputmode="numeric"
-              id="input-K_0"
-              placeholder="25.000"
-              class="calc-input w-full rounded-lg border border-brand-border bg-white px-4 py-2.5 text-sm text-brand-heading placeholder:text-gray-400 focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20 focus:outline-none transition-all"
-            />
-            <span class="absolute right-4 top-1/2 -translate-y-1/2 text-xs text-brand-text pointer-events-none">TL/ay</span>
-          </div>
+        <p class="text-xs text-brand-text mb-2">Almayı düşündüğünüz konutun/aracın güncel piyasa değeri.</p>
+        <div class="relative">
+          <input
+            type="text"
+            inputmode="numeric"
+            id="input-F"
+            placeholder="5.000.000"
+            value="5.000.000"
+            class="calc-input w-full rounded-lg border border-brand-border bg-white px-4 py-3 text-base text-brand-heading placeholder:text-gray-400 focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20 focus:outline-none transition-all"
+          />
+          <span class="absolute right-4 top-1/2 -translate-y-1/2 text-sm text-brand-text pointer-events-none">TL</span>
         </div>
-        <div>
-          <label for="input-r_kira_yillik" class="block text-xs font-medium text-brand-heading mb-1">Yıllık Kira Artışı</label>
-          <div class="relative">
-            <input
-              type="number"
-              id="input-r_kira_yillik"
-              step="1"
-              min="0"
-              max="200"
-              placeholder="50"
-              class="calc-input w-full rounded-lg border border-brand-border bg-white px-4 py-2.5 text-sm text-brand-heading placeholder:text-gray-400 focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20 focus:outline-none transition-all"
-            />
-            <span class="absolute right-4 top-1/2 -translate-y-1/2 text-xs text-brand-text pointer-events-none">%</span>
-          </div>
+        <p class="mt-1 text-xs text-brand-text" id="hint-F">Min: 100.000 — Maks: 100.000.000 TL</p>
+      </div>
+
+      <!-- Down Payment -->
+      <div>
+        <label for="input-P" class="block text-sm font-medium text-brand-heading mb-1">
+          Peşinat
+          <span class="text-brand-text font-normal">(opsiyonel)</span>
+        </label>
+        <p class="text-xs text-brand-text mb-2">Elinizde bulunan ve peşin ödeyebileceğiniz tutar. Yoksa 0 bırakın.</p>
+        <div class="relative">
+          <input
+            type="text"
+            inputmode="numeric"
+            id="input-P"
+            placeholder="0"
+            value="0"
+            class="calc-input w-full rounded-lg border border-brand-border bg-white px-4 py-3 text-base text-brand-heading placeholder:text-gray-400 focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20 focus:outline-none transition-all"
+          />
+          <span class="absolute right-4 top-1/2 -translate-y-1/2 text-sm text-brand-text pointer-events-none">TL</span>
         </div>
       </div>
     </div>
   </div>
-</section>
+</div>

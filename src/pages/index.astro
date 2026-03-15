@@ -1,7 +1,9 @@
 ---
 import Base from '../layouts/Base.astro';
 import { Icon } from 'astro-icon/components';
+import WizardNav from '../components/calculator/WizardNav.astro';
 import CommonInputs from '../components/calculator/CommonInputs.astro';
+import AdvancedInputs from '../components/calculator/AdvancedInputs.astro';
 import BankaInputs from '../components/calculator/BankaInputs.astro';
 import EvimInputs from '../components/calculator/EvimInputs.astro';
 import BirikimInputs from '../components/calculator/BirikimInputs.astro';
@@ -23,78 +25,38 @@ import CashFlowTable from '../components/calculator/CashFlowTable.astro';
       </p>
     </div>
 
-    {/* Calculator */}
-    <div id="calculator" class="space-y-8">
-      {/* Step 1: Common Parameters */}
-      <div class="bg-white border border-brand-border rounded-xl p-5 sm:p-6 shadow-sm">
-        <div class="flex items-center gap-3 mb-5">
-          <div class="w-8 h-8 rounded-lg bg-brand-primary text-white flex items-center justify-center text-sm font-bold shrink-0">1</div>
-          <h2 class="font-heading text-lg font-semibold text-brand-heading">Temel Bilgiler</h2>
-        </div>
-        <CommonInputs />
-      </div>
+    {/* Calculator Wizard */}
+    <div id="calculator">
+      <WizardNav />
 
-      {/* Step 2: Model Tabs */}
-      <div class="bg-white border border-brand-border rounded-xl shadow-sm overflow-hidden">
-        <div class="flex items-center gap-3 p-5 sm:p-6 pb-0">
-          <div class="w-8 h-8 rounded-lg bg-brand-primary text-white flex items-center justify-center text-sm font-bold shrink-0">2</div>
-          <h2 class="font-heading text-lg font-semibold text-brand-heading">Finansman Modelleri</h2>
-        </div>
+      {/* Wizard Steps */}
+      <CommonInputs />
+      <AdvancedInputs />
+      <BankaInputs />
+      <EvimInputs />
+      <BirikimInputs />
 
-        {/* Model Tab Navigation */}
-        <div class="px-5 sm:px-6 pt-4">
-          <div class="flex border-b border-brand-border">
+      {/* Step 6: Results */}
+      <div id="wizard-step-6" class="wizard-step hidden">
+        <div class="space-y-6">
+          {/* Calculate Button */}
+          <div class="text-center space-y-3">
             <button
               type="button"
-              data-model-tab="banka"
-              class="model-tab active-model-tab flex-1 px-3 py-3 text-sm font-medium transition-colors relative whitespace-nowrap"
+              id="btn-karsilastir"
+              class="w-full sm:w-auto px-8 py-4 rounded-xl bg-brand-primary text-white font-heading font-semibold text-lg shadow-lg shadow-brand-primary/25 hover:bg-brand-secondary hover:shadow-xl hover:shadow-brand-secondary/25 active:scale-[0.98] transition-all"
             >
-              <Icon name="tabler:building-bank" class="w-4 h-4 inline-block mr-1.5 -mt-0.5" />
-              Banka Kredisi
+              <Icon name="tabler:arrows-exchange" class="w-5 h-5 inline-block mr-2 -mt-0.5" />
+              Karşılaştır
             </button>
-            <button
-              type="button"
-              data-model-tab="evim"
-              class="model-tab flex-1 px-3 py-3 text-sm font-medium transition-colors relative text-brand-text hover:text-brand-heading whitespace-nowrap"
-            >
-              <Icon name="tabler:home-hand" class="w-4 h-4 inline-block mr-1.5 -mt-0.5" />
-              Evim Sistemi
-            </button>
-            <button
-              type="button"
-              data-model-tab="biriktir"
-              class="model-tab flex-1 px-3 py-3 text-sm font-medium transition-colors relative text-brand-text hover:text-brand-heading whitespace-nowrap"
-            >
-              <Icon name="tabler:pig-money" class="w-4 h-4 inline-block mr-1.5 -mt-0.5" />
-              Kendin Biriktir
-            </button>
+            <p id="error-message" class="hidden text-sm text-brand-danger font-medium"></p>
           </div>
-        </div>
 
-        {/* Model Panels */}
-        <div class="p-5 sm:p-6">
-          <BankaInputs />
-          <EvimInputs />
-          <BirikimInputs />
+          {/* Results */}
+          <ResultsSummary />
+          <CashFlowTable />
         </div>
       </div>
-
-      {/* Calculate Button */}
-      <div class="text-center space-y-3">
-        <button
-          type="button"
-          id="btn-karsilastir"
-          class="w-full sm:w-auto px-8 py-4 rounded-xl bg-brand-primary text-white font-heading font-semibold text-lg shadow-lg shadow-brand-primary/25 hover:bg-brand-secondary hover:shadow-xl hover:shadow-brand-secondary/25 active:scale-[0.98] transition-all"
-        >
-          <Icon name="tabler:arrows-exchange" class="w-5 h-5 inline-block mr-2 -mt-0.5" />
-          Karşılaştır
-        </button>
-        <p id="error-message" class="hidden text-sm text-brand-danger font-medium"></p>
-      </div>
-
-      {/* Results */}
-      <ResultsSummary />
-      <CashFlowTable />
     </div>
   </section>
 </Base>
@@ -103,21 +65,12 @@ import CashFlowTable from '../components/calculator/CashFlowTable.astro';
   .active-asset-btn,
   .active-evim-btn,
   .active-taksit-btn,
-  .active-rmode-btn,
+  .active-birikim-btn,
   .active-senaryo-btn,
   .active-cf-btn {
     background-color: #0D9488;
     color: white;
     box-shadow: 0 1px 3px 0 rgb(13 148 136 / 0.3);
-  }
-
-  .active-model-tab {
-    color: #0D9488;
-    border-bottom: 2px solid #0D9488;
-  }
-
-  .model-tab:not(.active-model-tab) {
-    border-bottom: 2px solid transparent;
   }
 
   .calc-input.input-error {
@@ -129,6 +82,7 @@ import CashFlowTable from '../components/calculator/CashFlowTable.astro';
   import {
     yillikToAylik,
     hesaplaTeslimAyi,
+    hesaplaSabitTaksit,
     hesaplaBankaNBD,
     hesaplaEvimNBD,
     hesaplaBirikimNBD,
@@ -141,6 +95,7 @@ import CashFlowTable from '../components/calculator/CashFlowTable.astro';
     BirikimParams,
     TaksitPlan,
     ModelSonuc,
+    BirikimModu,
   } from '../lib/engine';
   import type { CekilisliSonuc } from '../lib/engine/cekilisli';
 
@@ -193,6 +148,132 @@ import CashFlowTable from '../components/calculator/CashFlowTable.astro';
     if (input.value && input.value !== '0') formatTLInput(input);
   });
 
+  // ── Wizard Navigation ─────────────────────────────────────
+
+  let currentStep = 1;
+  const TOTAL_STEPS = 6;
+
+  function showStep(step: number) {
+    document.querySelectorAll('.wizard-step').forEach(el => el.classList.add('hidden'));
+    $(`wizard-step-${step}`)?.classList.remove('hidden');
+
+    // Update progress indicators
+    document.querySelectorAll('[data-wizard-step-indicator]').forEach(el => {
+      const s = parseInt((el as HTMLElement).dataset.wizardStepIndicator || '0');
+      const circle = el.querySelector('.wizard-step-circle') as HTMLElement;
+      const label = el.querySelector('.wizard-step-label') as HTMLElement;
+      const line = el.querySelector('.wizard-step-line') as HTMLElement;
+
+      if (circle) {
+        if (s <= step) {
+          circle.className = 'wizard-step-circle w-8 h-8 sm:w-9 sm:h-9 rounded-full flex items-center justify-center text-xs sm:text-sm font-bold transition-all bg-brand-primary text-white shadow-md shadow-brand-primary/30';
+        } else {
+          circle.className = 'wizard-step-circle w-8 h-8 sm:w-9 sm:h-9 rounded-full flex items-center justify-center text-xs sm:text-sm font-bold transition-all bg-brand-surface text-brand-text border border-brand-border';
+        }
+      }
+      if (label) {
+        label.className = `wizard-step-label mt-1.5 text-[10px] sm:text-xs font-medium text-center transition-colors leading-tight ${s <= step ? 'text-brand-primary' : 'text-brand-text/60'}`;
+      }
+    });
+
+    // Update connecting lines
+    document.querySelectorAll('.wizard-step-line').forEach(el => {
+      const parent = (el as HTMLElement).closest('[data-wizard-step-indicator]');
+      if (parent) {
+        const s = parseInt((parent as HTMLElement).dataset.wizardStepIndicator || '0');
+        if (s < step) {
+          el.classList.add('bg-brand-primary');
+          el.classList.remove('bg-brand-border');
+        } else {
+          el.classList.remove('bg-brand-primary');
+          el.classList.add('bg-brand-border');
+        }
+      }
+    });
+
+    // Prev/Next buttons
+    const prev = $('wizard-prev') as HTMLButtonElement;
+    const next = $('wizard-next') as HTMLButtonElement;
+    if (prev) prev.classList.toggle('hidden', step === 1);
+    if (next) next.textContent = step === TOTAL_STEPS ? 'Karşılaştır' : 'Devam Et';
+
+    currentStep = step;
+
+    // Auto-compute dependent fields when entering certain steps
+    if (step === 4) updateEvimDerivedFields();
+    if (step === 5) updateBirikimDerivedFields();
+    if (step === 6) runCalculation();
+  }
+
+  $('wizard-next')?.addEventListener('click', () => {
+    if (currentStep === TOTAL_STEPS) {
+      runCalculation();
+      return;
+    }
+    if (!validateStep(currentStep)) return;
+    showStep(currentStep + 1);
+  });
+
+  $('wizard-prev')?.addEventListener('click', () => {
+    if (currentStep > 1) showStep(currentStep - 1);
+  });
+
+  // Allow clicking step indicators to navigate
+  document.querySelectorAll('[data-wizard-step-indicator]').forEach(el => {
+    el.addEventListener('click', () => {
+      const target = parseInt((el as HTMLElement).dataset.wizardStepIndicator || '0');
+      if (target < currentStep) showStep(target);
+      // Only allow forward navigation to steps already visited
+      if (target === currentStep + 1 && validateStep(currentStep)) showStep(target);
+    });
+  });
+
+  // ── Step Validation ────────────────────────────────────────
+
+  function validateStep(step: number): boolean {
+    clearError();
+    switch (step) {
+      case 1: {
+        const F = getNum('input-F');
+        const P = getNum('input-P');
+        if (F < 100_000 || F > 100_000_000) {
+          showError('Konut/araç değeri 100.000 — 100.000.000 TL arasında olmalıdır.');
+          return false;
+        }
+        if (P < 0 || P >= F) {
+          showError('Peşinat 0 ile konut değerinden düşük olmalıdır.');
+          return false;
+        }
+        return true;
+      }
+      case 2: {
+        const R = getNum('input-R_yillik');
+        if (R < 0 || R > 500) { showError('İskonto oranı %0–%500 arasında olmalıdır.'); return false; }
+        return true;
+      }
+      case 3: {
+        const r = getNum('input-r_b_yillik');
+        const n = getNum('input-n_b');
+        if (r < 0.01 || r > 500) { showError('Banka faiz oranı %0.01–%500 arasında olmalıdır.'); return false; }
+        if (n < 12 || n > 360) { showError('Kredi vadesi 12–360 ay arasında olmalıdır.'); return false; }
+        return true;
+      }
+      case 4: {
+        const O = getNum('input-O_oran');
+        const n = getNum('input-n_e');
+        const asset = getStr('input-assetType');
+        const maxV = asset === 'konut' ? 240 : 120;
+        if (O < 0 || O > 20) { showError('Organizasyon ücreti oranı %0–%20 arasında olmalıdır.'); return false; }
+        if (n < 12 || n > maxV) { showError(`Toplam vade 12–${maxV} ay arasında olmalıdır.`); return false; }
+        return true;
+      }
+      case 5:
+        return true; // BirikimInputs has sensible defaults
+      default:
+        return true;
+    }
+  }
+
   // ── Toggle helpers ─────────────────────────────────────────
 
   function setupToggle(toggleId: string, panelId: string) {
@@ -203,16 +284,7 @@ import CashFlowTable from '../components/calculator/CashFlowTable.astro';
   }
 
   setupToggle('toggle-kira', 'kira-panel');
-  setupToggle('toggle-banka-ek', 'banka-ek-panel');
   setupToggle('toggle-kiraDestegi', 'kiraDestegi-panel');
-
-  // Advanced settings
-  $('advanced-toggle')?.addEventListener('click', () => {
-    const panel = $('advanced-panel');
-    const chevron = $('advanced-chevron');
-    const showing = panel?.classList.toggle('hidden') === false;
-    chevron?.style.setProperty('transform', showing ? 'rotate(180deg)' : '');
-  });
 
   // ── Button group helper ────────────────────────────────────
 
@@ -239,60 +311,117 @@ import CashFlowTable from '../components/calculator/CashFlowTable.astro';
     });
   }
 
-  setupBtnGroup('asset-type-btn', 'active-asset-btn', 'input-assetType', 'asset');
-  setupBtnGroup('rmode-btn', 'active-rmode-btn', 'input-R_mode', 'rmode');
+  // Asset type toggle — also update BSMV/KKDF defaults
+  setupBtnGroup('asset-type-btn', 'active-asset-btn', 'input-assetType', 'asset', val => {
+    const isKonut = val === 'konut';
+    const bsmv = $('input-bsmvOrani') as HTMLInputElement;
+    const kkdf = $('input-kkdfOrani') as HTMLInputElement;
+    if (bsmv) bsmv.value = isKonut ? '0' : '15';
+    if (kkdf) kkdf.value = isKonut ? '0' : '15';
+    // Update hints
+    const bsmvHint = $('hint-bsmv');
+    const kkdfHint = $('hint-kkdf');
+    if (bsmvHint) bsmvHint.textContent = isKonut ? 'Konut: %0 (istisna) / Araç: %15' : 'Araç: %15 / Konut: %0 (istisna)';
+    if (kkdfHint) kkdfHint.textContent = isKonut ? 'Konut: %0 / Araç: %15' : 'Araç: %15 / Konut: %0';
+  });
+
+  // Evim model toggle
   setupBtnGroup('evim-model-btn', 'active-evim-btn', 'input-evim-model', 'evimModel', val => {
     $('teslim-cekilissiz')?.classList.toggle('hidden', val === 'cekilisli');
     $('teslim-cekilisli')?.classList.toggle('hidden', val !== 'cekilisli');
   });
+
+  // Taksit plan toggle
   setupBtnGroup('taksit-plan-btn', 'active-taksit-btn', 'input-taksitPlan', 'taksitPlan', val => {
     document.querySelectorAll('.plan-fields').forEach(p => p.classList.add('hidden'));
     $(`plan-${val}`)?.classList.remove('hidden');
+    if (val === 'sabit') updateSabitTaksitDisplay();
   });
 
-  // ── Model tabs ─────────────────────────────────────────────
-
-  document.querySelectorAll<HTMLButtonElement>('.model-tab').forEach(tab => {
-    tab.addEventListener('click', () => {
-      document.querySelectorAll('.model-tab').forEach(t => {
-        t.classList.remove('active-model-tab');
-        t.classList.add('text-brand-text', 'hover:text-brand-heading');
-      });
-      tab.classList.add('active-model-tab');
-      tab.classList.remove('text-brand-text', 'hover:text-brand-heading');
-      document.querySelectorAll('.model-panel').forEach(p => p.classList.add('hidden'));
-      $(tab.dataset.modelTab + '-panel')?.classList.remove('hidden');
-    });
+  // Birikim mode toggle
+  setupBtnGroup('birikim-mod-btn', 'active-birikim-btn', 'input-birikimMod', 'birikimMod', val => {
+    $('birikim-ayHesapla')?.classList.toggle('hidden', val !== 'ayHesapla');
+    $('birikim-tutarHesapla')?.classList.toggle('hidden', val !== 'tutarHesapla');
   });
 
-  // ── Auto delivery month ────────────────────────────────────
+  // ── Derived field updates ──────────────────────────────────
 
-  $('btn-auto-teslim')?.addEventListener('click', () => {
+  // Sync banka vade to evim vade
+  function syncVade() {
+    const n_b = getNum('input-n_b');
+    const ne = $('input-n_e') as HTMLInputElement;
+    const syncInfo = $('sync-vade-info');
+    if (ne && ne.value === '' || ne?.dataset.userOverride !== 'true') {
+      if (ne) ne.value = String(n_b);
+    }
+    if (syncInfo) syncInfo.textContent = `${n_b} ay`;
+  }
+
+  $('input-n_b')?.addEventListener('change', syncVade);
+
+  // Auto sabit taksit display
+  function updateSabitTaksitDisplay() {
+    const F = getNum('input-F');
+    const P = getNum('input-P');
+    const n_e = getNum('input-n_e');
+    const display = $('sabit-taksit-display');
+    if (display && n_e > 0) {
+      const taksit = hesaplaSabitTaksit(F, P, n_e);
+      display.textContent = TL.format(Math.round(taksit));
+    }
+  }
+
+  // Listen for changes that affect sabit taksit
+  ['input-F', 'input-P', 'input-n_e'].forEach(id => {
+    $(id)?.addEventListener('change', updateSabitTaksitDisplay);
+    $(id)?.addEventListener('input', updateSabitTaksitDisplay);
+  });
+
+  // Auto teslimat ayı
+  function updateTeslimDisplay() {
     const F = getNum('input-F');
     const P = getNum('input-P');
     const n_e = getNum('input-n_e');
     const plan = buildTaksitPlan();
-    if (!F || !n_e || !plan) return;
-    const t = hesaplaTeslimAyi(F, P, plan, n_e);
-    ($('input-t_teslim') as HTMLInputElement).value = String(t);
-  });
+    const display = $('teslim-display');
+    const hidden = $('input-t_teslim') as HTMLInputElement;
+
+    if (display && plan && F > 0 && n_e > 0) {
+      const t = hesaplaTeslimAyi(F, P, plan, n_e);
+      display.textContent = `${t}. ay`;
+      if (hidden) hidden.value = String(t);
+    }
+  }
+
+  // Update Evim derived fields when entering step 4
+  function updateEvimDerivedFields() {
+    syncVade();
+    updateSabitTaksitDisplay();
+    updateTeslimDisplay();
+  }
+
+  // Update biriktir display when entering step 5
+  function updateBirikimDerivedFields() {
+    const R_yillik = getNum('input-R_yillik');
+    const display = $('biriktir-getiri-display');
+    if (display) display.textContent = `%${R_yillik}`;
+  }
 
   // ── Build params from form ─────────────────────────────────
 
   function buildTaksitPlan(): TaksitPlan | null {
     const tip = getStr('input-taksitPlan');
+    const F = getNum('input-F');
+    const P = getNum('input-P');
+    const n_e = getNum('input-n_e');
+
     switch (tip) {
       case 'sabit':
-        return { tip: 'sabit', aylikTutar: getNum('input-aylikTutar') };
+        return { tip: 'sabit', aylikTutar: hesaplaSabitTaksit(F, P, n_e) };
       case 'yillikArtisli':
         return { tip: 'yillikArtisli', baslangicTutar: getNum('input-baslangicTutar'), yillikArtisOrani: getNum('input-yillikArtisOrani') / 100 };
       case 'teslimatSonrasiArtisli':
         return { tip: 'teslimatSonrasiArtisli', teslimOncesiTutar: getNum('input-teslimOncesiTutar'), teslimSonrasiTutar: getNum('input-teslimSonrasiTutar'), yillikArtisOrani: getNum('input-teslimSonrasiArtis') / 100 };
-      case 'manuel': {
-        const raw = (document.getElementById('input-manuelTutarlar') as HTMLTextAreaElement)?.value ?? '';
-        const arr = raw.split(',').map(s => parseTL(s.trim())).filter(n => n > 0);
-        return arr.length ? { tip: 'manuel', aylikTutarlar: arr } : null;
-      }
       default: return null;
     }
   }
@@ -316,8 +445,8 @@ import CashFlowTable from '../components/calculator/CashFlowTable.astro';
       showError('Konut/araç değeri 100.000 — 100.000.000 TL arasında olmalıdır.');
       return null;
     }
-    if (P < 0 || P > F) {
-      showError('Peşinat 0 ile konut değeri arasında olmalıdır.');
+    if (P < 0 || P >= F) {
+      showError('Peşinat 0 ile konut değerinden düşük olmalıdır.');
       return null;
     }
 
@@ -326,7 +455,6 @@ import CashFlowTable from '../components/calculator/CashFlowTable.astro';
     const R_yillik = getNum('input-R_yillik');
     if (R_yillik > 0) {
       common.R = yillikToAylik(R_yillik / 100);
-      common.R_mode = getStr('input-R_mode') as any;
     }
 
     const r_ev_yillik = getNum('input-r_ev_yillik');
@@ -345,20 +473,22 @@ import CashFlowTable from '../components/calculator/CashFlowTable.astro';
     const r_b_yillik = getNum('input-r_b_yillik');
     const n_b = getNum('input-n_b');
 
-    if (r_b_yillik < 1 || r_b_yillik > 500) { showError('Banka faiz oranı %1–%500 arasında olmalıdır.'); return null; }
+    if (r_b_yillik < 0.01 || r_b_yillik > 500) { showError('Banka faiz oranı geçersiz.'); return null; }
     if (n_b < 12 || n_b > 360) { showError('Kredi vadesi 12–360 ay arasında olmalıdır.'); return null; }
 
-    const p: BankaParams = { r_b: yillikToAylik(r_b_yillik / 100), n_b };
-
-    if (($('toggle-banka-ek') as HTMLInputElement)?.checked) {
-      p.dosyaMasrafi = getNum('input-dosyaMasrafi');
-      p.ekspertizUcreti = getNum('input-ekspertizUcreti');
-      p.ipotekTesisUcreti = getNum('input-ipotekTesisUcreti');
-      p.bsmvOrani = getNum('input-bsmvOrani') / 100;
-      p.daskYillik = getNum('input-banka-dask');
-      p.konutSigortaYillik = getNum('input-banka-konutSigorta');
-      p.hayatSigortaYillik = getNum('input-banka-hayatSigorta');
-    }
+    const p: BankaParams = {
+      r_b: yillikToAylik(r_b_yillik / 100),
+      n_b,
+      // Extra costs are always visible now
+      dosyaMasrafi: getNum('input-dosyaMasrafi'),
+      ekspertizUcreti: getNum('input-ekspertizUcreti'),
+      ipotekHarciOrani: getNum('input-ipotekHarciOrani') / 1000, // convert from ‰
+      bsmvOrani: getNum('input-bsmvOrani') / 100,
+      kkdfOrani: getNum('input-kkdfOrani') / 100,
+      daskYillik: getNum('input-banka-dask'),
+      konutSigortaYillik: getNum('input-banka-konutSigorta'),
+      hayatSigortaYillik: getNum('input-banka-hayatSigorta'),
+    };
 
     return p;
   }
@@ -368,11 +498,10 @@ import CashFlowTable from '../components/calculator/CashFlowTable.astro';
     const O_oran_pct = getNum('input-O_oran');
     const n_e = getNum('input-n_e');
 
-    if (O_oran_pct < 5 || O_oran_pct > 15) { showError('Organizasyon ücreti oranı %5–%15 arasında olmalıdır.'); return null; }
+    if (O_oran_pct < 0 || O_oran_pct > 20) { showError('Organizasyon ücreti oranı %0–%20 arasında olmalıdır.'); return null; }
 
     const maxV = common.assetType === 'konut' ? 240 : 120;
-    const minV = common.assetType === 'konut' ? 24 : 12;
-    if (n_e < minV || n_e > maxV) { showError(`Toplam vade ${minV}–${maxV} ay arasında olmalıdır.`); return null; }
+    if (n_e < 12 || n_e > maxV) { showError(`Toplam vade 12–${maxV} ay arasında olmalıdır.`); return null; }
 
     const taksitPlani = buildTaksitPlan();
     if (!taksitPlani) { showError('Taksit planı bilgilerini doldurun.'); return null; }
@@ -399,16 +528,40 @@ import CashFlowTable from '../components/calculator/CashFlowTable.astro';
     };
   }
 
-  function buildBirikimParams(t_teslim: number): BirikimParams | null {
-    const r_yillik = getNum('input-r_mevduat_yillik');
+  function buildBirikimParams(evimParams: EvimParams): BirikimParams | null {
+    const R_yillik = getNum('input-R_yillik');
     const stopaj = getNum('input-stopajOrani') / 100;
-    let hedefAy = getNum('input-hedefAy');
+    const mod = getStr('input-birikimMod') as BirikimModu;
 
-    if (r_yillik < 0 || r_yillik > 200) { showError('Yatırım getirisi %0–%200 arasında olmalıdır.'); return null; }
-    if (!hedefAy) hedefAy = t_teslim;
+    const brutAylik = yillikToAylik(R_yillik / 100);
+    const netAylik = brutAylik * (1 - stopaj);
 
-    const brutAylik = yillikToAylik(r_yillik / 100);
-    return { r_mevduat: brutAylik * (1 - stopaj), stopajOrani: stopaj, hedefAy };
+    const birikimP: BirikimParams = {
+      r_mevduat: netAylik,
+      stopajOrani: stopaj,
+      mod,
+    };
+
+    if (mod === 'ayHesapla') {
+      let aylik = getNum('input-aylikBirikim');
+      // Default to Evim sabit taksit if empty
+      if (!aylik && evimParams.taksitPlani.tip === 'sabit') {
+        aylik = evimParams.taksitPlani.aylikTutar;
+      }
+      if (!aylik) { showError('Aylık birikim tutarı girin.'); return null; }
+      birikimP.aylikBirikim = aylik;
+      const artis = getNum('input-birikimArtisOrani');
+      birikimP.aylikBirikimArtisOrani = artis > 0 ? yillikToAylik(artis / 100) : 0;
+    } else if (mod === 'tutarHesapla') {
+      let hedef = getNum('input-birikimHedefAy');
+      if (!hedef) hedef = evimParams.t_teslim;
+      if (!hedef || hedef < 1) { showError('Hedef ay belirtin.'); return null; }
+      birikimP.hedefAy = hedef;
+      const artis = getNum('input-tutarBirikimArtis');
+      birikimP.aylikBirikimArtisOrani = artis > 0 ? yillikToAylik(artis / 100) : 0;
+    }
+
+    return birikimP;
   }
 
   // ── Results rendering ──────────────────────────────────────
@@ -452,6 +605,8 @@ import CashFlowTable from '../components/calculator/CashFlowTable.astro';
     }
     if (key === 'biriktir') {
       if (r.birikim) {
+        if (r.birikim.hesaplananAy) rows.push(['Hedef Ay', `${r.birikim.hesaplananAy}. ay`]);
+        if (r.birikim.gerekliAylikTutar) rows.push(['Aylık Tutar', TL.format(r.birikim.gerekliAylikTutar)]);
         rows.push(['Birikim', TL.format(r.birikim.toplamBirikim)]);
         rows.push(['Hedef Değer', TL.format(r.birikim.hedefKonutDegeri)]);
         rows.push([r.birikim.yeterliMi ? 'Fazla' : 'Eksik', TL.format(Math.abs(r.birikim.fark))]);
@@ -517,7 +672,6 @@ import CashFlowTable from '../components/calculator/CashFlowTable.astro';
     }
 
     $('cashflow-section')?.classList.remove('hidden');
-    $('results-section')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
 
   // ── Cash flow table ────────────────────────────────────────
@@ -601,7 +755,7 @@ import CashFlowTable from '../components/calculator/CashFlowTable.astro';
 
   // ── Main calculation ───────────────────────────────────────
 
-  $('btn-karsilastir')?.addEventListener('click', () => {
+  function runCalculation() {
     clearError();
 
     const common = buildCommonParams();
@@ -610,7 +764,7 @@ import CashFlowTable from '../components/calculator/CashFlowTable.astro';
     if (!banka) return;
     const evim = buildEvimParams(common);
     if (!evim) return;
-    const birikimP = buildBirikimParams(evim.t_teslim);
+    const birikimP = buildBirikimParams(evim);
     if (!birikimP) return;
 
     try {
@@ -647,5 +801,10 @@ import CashFlowTable from '../components/calculator/CashFlowTable.astro';
       showError(`Hesaplama hatası: ${err.message || 'Bilinmeyen hata'}`);
       console.error(err);
     }
-  });
+  }
+
+  $('btn-karsilastir')?.addEventListener('click', runCalculation);
+
+  // ── Initialize ─────────────────────────────────────────────
+  showStep(1);
 </script>

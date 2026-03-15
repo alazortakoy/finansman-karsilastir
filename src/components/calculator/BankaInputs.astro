@@ -2,110 +2,167 @@
 import { Icon } from 'astro-icon/components';
 ---
 
-<div id="banka-panel" class="model-panel space-y-4">
-  <!-- Annual Interest Rate -->
-  <div>
-    <label for="input-r_b_yillik" class="block text-sm font-medium text-brand-heading mb-1.5">
-      Yıllık Kredi Faiz Oranı
-    </label>
-    <div class="relative">
-      <input
-        type="number"
-        id="input-r_b_yillik"
-        step="0.1"
-        min="1"
-        max="500"
-        placeholder="320"
-        class="calc-input w-full rounded-lg border border-brand-border bg-white px-4 py-3 text-base text-brand-heading placeholder:text-gray-400 focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20 focus:outline-none transition-all"
-      />
-      <span class="absolute right-4 top-1/2 -translate-y-1/2 text-sm text-brand-text pointer-events-none">%</span>
+<div id="wizard-step-3" class="wizard-step hidden">
+  <div class="bg-white border border-brand-border rounded-xl p-5 sm:p-6 shadow-sm">
+    <div class="flex items-center gap-3 mb-2">
+      <div class="w-8 h-8 rounded-lg bg-brand-primary text-white flex items-center justify-center text-sm font-bold shrink-0">3</div>
+      <h2 class="font-heading text-lg font-semibold text-brand-heading">
+        <Icon name="tabler:building-bank" class="w-5 h-5 inline-block mr-1 -mt-0.5 text-blue-600" />
+        Banka Kredisi
+      </h2>
     </div>
-    <p class="mt-1 text-xs text-brand-text">Güncel oranı bankanızdan teyit edin.</p>
-  </div>
+    <p class="text-sm text-brand-text mb-6">Banka kredisi koşullarını girin. Ek maliyetler sonucu doğrudan etkiler.</p>
 
-  <!-- Term -->
-  <div>
-    <label for="input-n_b" class="block text-sm font-medium text-brand-heading mb-1.5">
-      Kredi Vadesi
-    </label>
-    <div class="relative">
-      <input
-        type="number"
-        id="input-n_b"
-        step="12"
-        min="12"
-        max="360"
-        placeholder="120"
-        class="calc-input w-full rounded-lg border border-brand-border bg-white px-4 py-3 text-base text-brand-heading placeholder:text-gray-400 focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20 focus:outline-none transition-all"
-      />
-      <span class="absolute right-4 top-1/2 -translate-y-1/2 text-sm text-brand-text pointer-events-none">ay</span>
-    </div>
-    <p class="mt-1 text-xs text-brand-text">12–360 ay (1–30 yıl)</p>
-  </div>
-
-  <!-- Extra Costs Toggle -->
-  <div class="border-t border-brand-border-light pt-4">
-    <div class="flex items-center justify-between">
-      <label class="text-sm font-medium text-brand-heading">Ek Maliyetler</label>
-      <label class="relative inline-flex items-center cursor-pointer">
-        <input type="checkbox" id="toggle-banka-ek" class="sr-only peer" />
-        <div class="w-9 h-5 bg-gray-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-brand-primary/20 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-brand-primary"></div>
-      </label>
-    </div>
-
-    <div id="banka-ek-panel" class="hidden mt-3 space-y-3 bg-brand-surface rounded-lg p-4">
-      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-        <div>
-          <label for="input-dosyaMasrafi" class="block text-xs font-medium text-brand-heading mb-1">Dosya Masrafı</label>
-          <div class="relative">
-            <input type="text" inputmode="numeric" id="input-dosyaMasrafi" placeholder="15.000" class="calc-input w-full rounded-lg border border-brand-border bg-white px-3 py-2 text-sm text-brand-heading placeholder:text-gray-400 focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20 focus:outline-none transition-all" />
-            <span class="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-brand-text pointer-events-none">TL</span>
-          </div>
-        </div>
-        <div>
-          <label for="input-ekspertizUcreti" class="block text-xs font-medium text-brand-heading mb-1">Ekspertiz Ücreti</label>
-          <div class="relative">
-            <input type="text" inputmode="numeric" id="input-ekspertizUcreti" placeholder="5.000" class="calc-input w-full rounded-lg border border-brand-border bg-white px-3 py-2 text-sm text-brand-heading placeholder:text-gray-400 focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20 focus:outline-none transition-all" />
-            <span class="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-brand-text pointer-events-none">TL</span>
-          </div>
-        </div>
-        <div>
-          <label for="input-ipotekTesisUcreti" class="block text-xs font-medium text-brand-heading mb-1">İpotek Tesis Harcı</label>
-          <div class="relative">
-            <input type="text" inputmode="numeric" id="input-ipotekTesisUcreti" placeholder="12.000" class="calc-input w-full rounded-lg border border-brand-border bg-white px-3 py-2 text-sm text-brand-heading placeholder:text-gray-400 focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20 focus:outline-none transition-all" />
-            <span class="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-brand-text pointer-events-none">TL</span>
-          </div>
-        </div>
-        <div>
-          <label for="input-bsmvOrani" class="block text-xs font-medium text-brand-heading mb-1">BSMV Oranı</label>
-          <div class="relative">
-            <input type="number" id="input-bsmvOrani" step="0.1" min="0" max="100" value="5" class="calc-input w-full rounded-lg border border-brand-border bg-white px-3 py-2 text-sm text-brand-heading placeholder:text-gray-400 focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20 focus:outline-none transition-all" />
-            <span class="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-brand-text pointer-events-none">%</span>
-          </div>
+    <div class="space-y-5">
+      <!-- Annual Interest Rate -->
+      <div>
+        <label for="input-r_b_yillik" class="block text-sm font-medium text-brand-heading mb-1">
+          Yıllık Kredi Faiz Oranı
+        </label>
+        <p class="text-xs text-brand-text mb-2">Bankanızın sunduğu yıllık konut/araç kredisi faiz oranı.</p>
+        <div class="relative">
+          <input
+            type="number"
+            id="input-r_b_yillik"
+            step="0.01"
+            min="0.01"
+            max="500"
+            value="2.54"
+            class="calc-input w-full rounded-lg border border-brand-border bg-white px-4 py-3 text-base text-brand-heading placeholder:text-gray-400 focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20 focus:outline-none transition-all"
+          />
+          <span class="absolute right-4 top-1/2 -translate-y-1/2 text-sm text-brand-text pointer-events-none">%</span>
         </div>
       </div>
 
-      <p class="text-xs text-brand-text font-medium mt-2">Yıllık Sigorta Primleri</p>
-      <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-        <div>
-          <label for="input-banka-dask" class="block text-xs font-medium text-brand-heading mb-1">DASK</label>
-          <div class="relative">
-            <input type="text" inputmode="numeric" id="input-banka-dask" placeholder="0" class="calc-input w-full rounded-lg border border-brand-border bg-white px-3 py-2 text-sm text-brand-heading placeholder:text-gray-400 focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20 focus:outline-none transition-all" />
-            <span class="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-brand-text pointer-events-none">TL</span>
-          </div>
+      <!-- Term -->
+      <div>
+        <label for="input-n_b" class="block text-sm font-medium text-brand-heading mb-1">
+          Kredi Vadesi
+        </label>
+        <p class="text-xs text-brand-text mb-2">Kredi kaç ay sürecek? Bu vade Evim sistemiyle karşılaştırma için referans alınır.</p>
+        <div class="relative">
+          <input
+            type="number"
+            id="input-n_b"
+            step="12"
+            min="12"
+            max="360"
+            value="120"
+            class="calc-input w-full rounded-lg border border-brand-border bg-white px-4 py-3 text-base text-brand-heading placeholder:text-gray-400 focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20 focus:outline-none transition-all"
+          />
+          <span class="absolute right-4 top-1/2 -translate-y-1/2 text-sm text-brand-text pointer-events-none">ay</span>
         </div>
-        <div>
-          <label for="input-banka-konutSigorta" class="block text-xs font-medium text-brand-heading mb-1">Konut Sigortası</label>
-          <div class="relative">
-            <input type="text" inputmode="numeric" id="input-banka-konutSigorta" placeholder="0" class="calc-input w-full rounded-lg border border-brand-border bg-white px-3 py-2 text-sm text-brand-heading placeholder:text-gray-400 focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20 focus:outline-none transition-all" />
-            <span class="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-brand-text pointer-events-none">TL</span>
+        <p class="mt-1 text-xs text-brand-text">12–360 ay (1–30 yıl)</p>
+      </div>
+
+      <!-- Extra Costs — ALWAYS VISIBLE -->
+      <div class="border-t border-brand-border-light pt-5">
+        <p class="text-sm font-medium text-brand-heading mb-1">Ek Maliyetler</p>
+        <p class="text-xs text-brand-text mb-4">Krediye ek olarak ödenen masraflar. Bankanıza göre farklılık gösterebilir.</p>
+
+        <div class="space-y-4 bg-brand-surface rounded-lg p-4 border border-brand-border-light">
+          <!-- Vergi ve Fonlar -->
+          <div>
+            <p class="text-xs font-semibold text-brand-heading mb-3 flex items-center gap-1.5">
+              <Icon name="tabler:receipt-tax" class="w-4 h-4 text-brand-primary" />
+              Vergi ve Fonlar
+            </p>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <label for="input-bsmvOrani" class="block text-xs font-medium text-brand-heading mb-1">
+                  BSMV Oranı
+                  <button type="button" class="inline-block ml-1 align-middle" title="Banka ve Sigorta Muameleleri Vergisi. Konut kredisinde istisna (0%), tüketici/araç kredisinde %15.">
+                    <Icon name="tabler:info-circle" class="w-3.5 h-3.5 text-brand-text/50" />
+                  </button>
+                </label>
+                <div class="relative">
+                  <input type="number" id="input-bsmvOrani" step="1" min="0" max="100" value="0" class="calc-input w-full rounded-lg border border-brand-border bg-white px-3 py-2 text-sm text-brand-heading focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20 focus:outline-none transition-all" />
+                  <span class="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-brand-text pointer-events-none">%</span>
+                </div>
+                <p class="mt-0.5 text-[10px] text-brand-text" id="hint-bsmv">Konut: %0 (istisna) / Araç: %15</p>
+              </div>
+              <div>
+                <label for="input-kkdfOrani" class="block text-xs font-medium text-brand-heading mb-1">
+                  KKDF Oranı
+                  <button type="button" class="inline-block ml-1 align-middle" title="Kaynak Kullanımını Destekleme Fonu. Konut kredisinde %0, tüketici/araç kredisinde %15. Faiz payı üzerinden hesaplanır.">
+                    <Icon name="tabler:info-circle" class="w-3.5 h-3.5 text-brand-text/50" />
+                  </button>
+                </label>
+                <div class="relative">
+                  <input type="number" id="input-kkdfOrani" step="1" min="0" max="100" value="0" class="calc-input w-full rounded-lg border border-brand-border bg-white px-3 py-2 text-sm text-brand-heading focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20 focus:outline-none transition-all" />
+                  <span class="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-brand-text pointer-events-none">%</span>
+                </div>
+                <p class="mt-0.5 text-[10px] text-brand-text" id="hint-kkdf">Konut: %0 / Araç: %15</p>
+              </div>
+            </div>
           </div>
-        </div>
-        <div>
-          <label for="input-banka-hayatSigorta" class="block text-xs font-medium text-brand-heading mb-1">Hayat Sigortası</label>
-          <div class="relative">
-            <input type="text" inputmode="numeric" id="input-banka-hayatSigorta" placeholder="0" class="calc-input w-full rounded-lg border border-brand-border bg-white px-3 py-2 text-sm text-brand-heading placeholder:text-gray-400 focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20 focus:outline-none transition-all" />
-            <span class="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-brand-text pointer-events-none">TL</span>
+
+          <!-- Masraf ve Harçlar -->
+          <div>
+            <p class="text-xs font-semibold text-brand-heading mb-3 flex items-center gap-1.5">
+              <Icon name="tabler:file-invoice" class="w-4 h-4 text-brand-primary" />
+              Masraf ve Harçlar
+            </p>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <label for="input-dosyaMasrafi" class="block text-xs font-medium text-brand-heading mb-1">Dosya Masrafı</label>
+                <div class="relative">
+                  <input type="text" inputmode="numeric" id="input-dosyaMasrafi" placeholder="0" class="calc-input w-full rounded-lg border border-brand-border bg-white px-3 py-2 text-sm text-brand-heading placeholder:text-gray-400 focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20 focus:outline-none transition-all" />
+                  <span class="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-brand-text pointer-events-none">TL</span>
+                </div>
+              </div>
+              <div>
+                <label for="input-ekspertizUcreti" class="block text-xs font-medium text-brand-heading mb-1">Ekspertiz Ücreti</label>
+                <div class="relative">
+                  <input type="text" inputmode="numeric" id="input-ekspertizUcreti" placeholder="0" class="calc-input w-full rounded-lg border border-brand-border bg-white px-3 py-2 text-sm text-brand-heading placeholder:text-gray-400 focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20 focus:outline-none transition-all" />
+                  <span class="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-brand-text pointer-events-none">TL</span>
+                </div>
+              </div>
+              <div class="sm:col-span-2">
+                <label for="input-ipotekHarciOrani" class="block text-xs font-medium text-brand-heading mb-1">
+                  İpotek Tesis Harcı
+                  <button type="button" class="inline-block ml-1 align-middle" title="Kredi tutarı üzerinden binde 4,55 olarak hesaplanır. Otomatik hesaplama için bu oranı koruyun.">
+                    <Icon name="tabler:info-circle" class="w-3.5 h-3.5 text-brand-text/50" />
+                  </button>
+                </label>
+                <div class="relative">
+                  <input type="number" id="input-ipotekHarciOrani" step="0.01" min="0" max="100" value="4.55" class="calc-input w-full rounded-lg border border-brand-border bg-white px-3 py-2 text-sm text-brand-heading focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20 focus:outline-none transition-all" />
+                  <span class="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-brand-text pointer-events-none">‰</span>
+                </div>
+                <p class="mt-0.5 text-[10px] text-brand-text">Kredi tutarının binde 4,55'i (varsayılan)</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Yıllık Sigorta Primleri -->
+          <div>
+            <p class="text-xs font-semibold text-brand-heading mb-3 flex items-center gap-1.5">
+              <Icon name="tabler:shield-check" class="w-4 h-4 text-brand-primary" />
+              Yıllık Sigorta Primleri
+            </p>
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <div>
+                <label for="input-banka-dask" class="block text-xs font-medium text-brand-heading mb-1">DASK</label>
+                <div class="relative">
+                  <input type="text" inputmode="numeric" id="input-banka-dask" placeholder="0" class="calc-input w-full rounded-lg border border-brand-border bg-white px-3 py-2 text-sm text-brand-heading placeholder:text-gray-400 focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20 focus:outline-none transition-all" />
+                  <span class="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-brand-text pointer-events-none">TL</span>
+                </div>
+              </div>
+              <div>
+                <label for="input-banka-konutSigorta" class="block text-xs font-medium text-brand-heading mb-1">Konut Sigortası</label>
+                <div class="relative">
+                  <input type="text" inputmode="numeric" id="input-banka-konutSigorta" placeholder="0" class="calc-input w-full rounded-lg border border-brand-border bg-white px-3 py-2 text-sm text-brand-heading placeholder:text-gray-400 focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20 focus:outline-none transition-all" />
+                  <span class="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-brand-text pointer-events-none">TL</span>
+                </div>
+              </div>
+              <div>
+                <label for="input-banka-hayatSigorta" class="block text-xs font-medium text-brand-heading mb-1">Hayat Sigortası</label>
+                <div class="relative">
+                  <input type="text" inputmode="numeric" id="input-banka-hayatSigorta" placeholder="0" class="calc-input w-full rounded-lg border border-brand-border bg-white px-3 py-2 text-sm text-brand-heading placeholder:text-gray-400 focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20 focus:outline-none transition-all" />
+                  <span class="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-brand-text pointer-events-none">TL</span>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>

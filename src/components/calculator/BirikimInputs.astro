@@ -1,64 +1,152 @@
 ---
+import { Icon } from 'astro-icon/components';
 ---
 
-<div id="biriktir-panel" class="model-panel hidden space-y-4">
-  <!-- Annual Net Return Rate -->
-  <div>
-    <label for="input-r_mevduat_yillik" class="block text-sm font-medium text-brand-heading mb-1.5">
-      Yıllık Net Yatırım Getirisi
-    </label>
-    <div class="relative">
-      <input
-        type="number"
-        id="input-r_mevduat_yillik"
-        step="0.1"
-        min="0"
-        max="200"
-        placeholder="45"
-        class="calc-input w-full rounded-lg border border-brand-border bg-white px-4 py-3 text-base text-brand-heading placeholder:text-gray-400 focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20 focus:outline-none transition-all"
-      />
-      <span class="absolute right-4 top-1/2 -translate-y-1/2 text-sm text-brand-text pointer-events-none">%</span>
+<div id="wizard-step-5" class="wizard-step hidden">
+  <div class="bg-white border border-brand-border rounded-xl p-5 sm:p-6 shadow-sm">
+    <div class="flex items-center gap-3 mb-2">
+      <div class="w-8 h-8 rounded-lg bg-brand-primary text-white flex items-center justify-center text-sm font-bold shrink-0">5</div>
+      <h2 class="font-heading text-lg font-semibold text-brand-heading">
+        <Icon name="tabler:pig-money" class="w-5 h-5 inline-block mr-1 -mt-0.5 text-amber-600" />
+        Kendin Biriktir
+      </h2>
     </div>
-    <p class="mt-1 text-xs text-brand-text">Mevduat, fon vb. yıllık net getiri oranı</p>
-  </div>
+    <p class="text-sm text-brand-text mb-6">Hiçbir finansman sistemine girmeden, paranızı kendiniz biriktirip yatırarak konutu almayı hedeflediğiniz senaryo.</p>
 
-  <!-- Withholding Tax Rate -->
-  <div>
-    <label for="input-stopajOrani" class="block text-sm font-medium text-brand-heading mb-1.5">
-      Stopaj Oranı
-    </label>
-    <div class="relative">
-      <input
-        type="number"
-        id="input-stopajOrani"
-        step="1"
-        min="0"
-        max="40"
-        value="15"
-        class="calc-input w-full rounded-lg border border-brand-border bg-white px-4 py-3 text-base text-brand-heading placeholder:text-gray-400 focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20 focus:outline-none transition-all"
-      />
-      <span class="absolute right-4 top-1/2 -translate-y-1/2 text-sm text-brand-text pointer-events-none">%</span>
-    </div>
-    <p class="mt-1 text-xs text-brand-text">TL mevduat varsayılan %15</p>
-  </div>
+    <div class="space-y-5">
+      <!-- Investment Return — auto from Step 2 iskonto -->
+      <div class="bg-brand-surface rounded-lg p-4 border border-brand-border-light">
+        <div class="flex items-center gap-2 mb-1">
+          <Icon name="tabler:percentage" class="w-4 h-4 text-brand-primary" />
+          <p class="text-xs font-medium text-brand-heading">Yıllık Yatırım Getirisi</p>
+        </div>
+        <p class="text-2xl font-heading font-bold text-brand-heading" id="biriktir-getiri-display" style="font-variant-numeric:tabular-nums">%30</p>
+        <p class="text-xs text-brand-text mt-1">Gelişmiş Ayarlar'daki iskonto oranı kullanılır. Stopaj sonrası net getiri hesaplanır.</p>
+      </div>
 
-  <!-- Target Month -->
-  <div>
-    <label for="input-hedefAy" class="block text-sm font-medium text-brand-heading mb-1.5">
-      Hedef Ay
-      <span class="text-brand-text font-normal">(ne zaman almak istiyorsunuz?)</span>
-    </label>
-    <div class="relative">
-      <input
-        type="number"
-        id="input-hedefAy"
-        min="1"
-        max="360"
-        placeholder="Evim teslimat ayı ile aynı"
-        class="calc-input w-full rounded-lg border border-brand-border bg-white px-4 py-3 text-base text-brand-heading placeholder:text-gray-400 focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20 focus:outline-none transition-all"
-      />
-      <span class="absolute right-4 top-1/2 -translate-y-1/2 text-sm text-brand-text pointer-events-none">ay</span>
+      <!-- Withholding Tax Rate -->
+      <div>
+        <label for="input-stopajOrani" class="block text-sm font-medium text-brand-heading mb-1">
+          Stopaj Oranı
+        </label>
+        <p class="text-xs text-brand-text mb-2">Mevduat/fon getirisinden kesilen vergi oranı.</p>
+        <div class="relative">
+          <input
+            type="number"
+            id="input-stopajOrani"
+            step="1"
+            min="0"
+            max="40"
+            value="15"
+            class="calc-input w-full rounded-lg border border-brand-border bg-white px-4 py-3 text-base text-brand-heading placeholder:text-gray-400 focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20 focus:outline-none transition-all"
+          />
+          <span class="absolute right-4 top-1/2 -translate-y-1/2 text-sm text-brand-text pointer-events-none">%</span>
+        </div>
+        <p class="mt-1 text-xs text-brand-text">TL mevduat varsayılan %15</p>
+      </div>
+
+      <!-- Calculation Mode -->
+      <div class="border-t border-brand-border-light pt-5">
+        <label class="block text-sm font-medium text-brand-heading mb-1">Hesaplama Modu</label>
+        <p class="text-xs text-brand-text mb-2">Biriktirme senaryonuzu nasıl analiz etmek istiyorsunuz?</p>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 bg-brand-surface rounded-lg p-1">
+          <button
+            type="button"
+            data-birikim-mod="ayHesapla"
+            class="birikim-mod-btn active-birikim-btn px-3 py-2.5 rounded-md text-xs font-medium transition-all text-left"
+          >
+            <span class="block font-semibold">Kaç Ayda Alırım?</span>
+            <span class="block text-[10px] mt-0.5 opacity-80">Aylık birikim tutarını gir, süreyi hesapla</span>
+          </button>
+          <button
+            type="button"
+            data-birikim-mod="tutarHesapla"
+            class="birikim-mod-btn px-3 py-2.5 rounded-md text-xs font-medium transition-all text-left text-brand-text hover:text-brand-heading"
+          >
+            <span class="block font-semibold">Aylık Ne Biriktirmeliyim?</span>
+            <span class="block text-[10px] mt-0.5 opacity-80">Hedef ay belirle, gerekli tutarı hesapla</span>
+          </button>
+        </div>
+        <input type="hidden" id="input-birikimMod" value="ayHesapla" />
+      </div>
+
+      <!-- Mode A: ayHesapla — monthly amount input -->
+      <div id="birikim-ayHesapla" class="space-y-3">
+        <div>
+          <label for="input-aylikBirikim" class="block text-xs font-medium text-brand-heading mb-1">Aylık Birikim Tutarı</label>
+          <p class="text-xs text-brand-text mb-2">Her ay ne kadar biriktirmeye başlayacaksınız? Bu tutar enflasyonla birlikte artacaktır.</p>
+          <div class="relative">
+            <input
+              type="text"
+              inputmode="numeric"
+              id="input-aylikBirikim"
+              placeholder="Evim taksiti ile aynı"
+              class="calc-input w-full rounded-lg border border-brand-border bg-white px-4 py-2.5 text-sm text-brand-heading placeholder:text-gray-400 focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20 focus:outline-none transition-all"
+            />
+            <span class="absolute right-4 top-1/2 -translate-y-1/2 text-xs text-brand-text pointer-events-none">TL/ay</span>
+          </div>
+          <p class="mt-1 text-xs text-brand-text">Boş bırakılırsa Evim sabit taksit tutarı kullanılır.</p>
+        </div>
+        <div>
+          <label for="input-birikimArtisOrani" class="block text-xs font-medium text-brand-heading mb-1">Aylık Birikim Artış Oranı</label>
+          <p class="text-xs text-brand-text mb-2">Biriktirdiğiniz tutarı her ay enflasyona paralel artıracağınız varsayılır.</p>
+          <div class="relative">
+            <input
+              type="number"
+              id="input-birikimArtisOrani"
+              step="1"
+              min="0"
+              max="200"
+              value="30"
+              class="calc-input w-full rounded-lg border border-brand-border bg-white px-4 py-2.5 text-sm text-brand-heading placeholder:text-gray-400 focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20 focus:outline-none transition-all"
+            />
+            <span class="absolute right-4 top-1/2 -translate-y-1/2 text-xs text-brand-text pointer-events-none">% yıllık</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Mode B: tutarHesapla — target month input -->
+      <div id="birikim-tutarHesapla" class="hidden space-y-3">
+        <div>
+          <label for="input-birikimHedefAy" class="block text-xs font-medium text-brand-heading mb-1">Hedef Ay</label>
+          <p class="text-xs text-brand-text mb-2">Kaç ay içinde almak istiyorsunuz? Varsayılan olarak Evim teslimat ayı kullanılır.</p>
+          <div class="relative">
+            <input
+              type="number"
+              id="input-birikimHedefAy"
+              min="1"
+              max="600"
+              placeholder="Evim teslimat ayı"
+              class="calc-input w-full rounded-lg border border-brand-border bg-white px-4 py-2.5 text-sm text-brand-heading placeholder:text-gray-400 focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20 focus:outline-none transition-all"
+            />
+            <span class="absolute right-4 top-1/2 -translate-y-1/2 text-xs text-brand-text pointer-events-none">ay</span>
+          </div>
+          <p class="mt-1 text-xs text-brand-text">Boş bırakılırsa Evim teslimat ayı referans alınır.</p>
+        </div>
+        <div>
+          <label for="input-tutarBirikimArtis" class="block text-xs font-medium text-brand-heading mb-1">Aylık Birikim Artış Oranı</label>
+          <div class="relative">
+            <input
+              type="number"
+              id="input-tutarBirikimArtis"
+              step="1"
+              min="0"
+              max="200"
+              value="30"
+              class="calc-input w-full rounded-lg border border-brand-border bg-white px-4 py-2.5 text-sm text-brand-heading placeholder:text-gray-400 focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20 focus:outline-none transition-all"
+            />
+            <span class="absolute right-4 top-1/2 -translate-y-1/2 text-xs text-brand-text pointer-events-none">% yıllık</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Info box -->
+      <div class="flex items-start gap-2 bg-blue-50 border border-blue-100 rounded-lg p-3">
+        <Icon name="tabler:info-circle" class="w-4 h-4 text-blue-500 shrink-0 mt-0.5" />
+        <p class="text-xs text-brand-text leading-relaxed">
+          Bu senaryo, Evim taksitleri yerine aynı tutarı yatırıma yönlendirip peşin alım hedeflediğiniz alternatifi analiz eder. NBD karşılaştırmasında referans olarak kullanılır.
+        </p>
+      </div>
     </div>
-    <p class="mt-1 text-xs text-brand-text">Varsayılan: Evim teslimat ayı (t_teslim)</p>
   </div>
 </div>
