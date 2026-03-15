@@ -1,5 +1,5 @@
 import type { CommonParams, BankaParams, ModelSonuc, NakitAkisi } from './types';
-import { annuite, indirge, yuvarla } from './helpers';
+import { annuite, indirge, yuvarla, normalizeCreditMonthlyRate } from './helpers';
 
 /**
  * Calculates the bank loan model result (MaliyetNBD).
@@ -28,8 +28,9 @@ export function hesaplaBankaNBD(
   const defaultKkdf = isKonut ? 0 : 0.15;
 
   const {
-    r_b,
+    r_b: rawRate,
     n_b,
+    creditRatePeriod = 'monthly',
     dosyaMasrafi = 0,
     ekspertizUcreti = 0,
     ipotekHarciOrani = 0.00455,   // binde 4.55
@@ -40,10 +41,13 @@ export function hesaplaBankaNBD(
     hayatSigortaYillik = 0,
   } = banka;
 
-  // Step 1: Loan amount
+  // Step 1: Normalize interest rate to monthly compound
+  const r_b = normalizeCreditMonthlyRate(rawRate, creditRatePeriod);
+
+  // Step 2: Loan amount
   const C = F - P;
 
-  // Step 2: Monthly annuity payment
+  // Step 3: Monthly annuity payment
   const A_b = annuite(C, r_b, n_b);
 
   // Step 4: One-time costs at T=0
@@ -63,18 +67,19 @@ export function hesaplaBankaNBD(
   const aylikNakitAkisi: NakitAkisi[] = [];
 
   for (let t = 1; t <= n_b; t++) {
-    // Step 3: Amortization — interest/principal split
+    // Amortization — interest/principal split
     const faizPayi = kalanAnapara * r_b;
-    const anaparaPayi = A_b - faizPayi;
+    // Last month: close out remaining principal exactly to avoid floating-point residual
+    const anaparaPayi = (t === n_b) ? kalanAnapara : (A_b - faizPayi);
     const bsmv = faizPayi * bsmvOrani;
     const kkdf = faizPayi * kkdfOrani;
-    const efektifTaksit = A_b + bsmv + kkdf;
+    const efektifTaksit = anaparaPayi + faizPayi + bsmv + kkdf;
 
     kalanAnapara -= anaparaPayi;
     toplamFaiz += faizPayi;
 
-    // Annual insurance at t = 12, 24, 36, ...
-    const sigortaEkMaliyet = (t % 12 === 0) ? yillikEkMaliyet : 0;
+    // Annual insurance starting at month 1, then every 12 months (1, 13, 25, ...)
+    const sigortaEkMaliyet = ((t - 1) % 12 === 0) ? yillikEkMaliyet : 0;
 
     const toplamCikis = efektifTaksit + sigortaEkMaliyet;
     kumulatifCikis += toplamCikis;

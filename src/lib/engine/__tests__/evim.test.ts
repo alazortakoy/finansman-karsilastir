@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { hesaplaEvimNBD } from '../evim';
-import { yillikToAylik, getKira, getTaksit, indirge, varlikDegeri, yuvarla } from '../helpers';
+import { yillikToAylik, getKira, indirge, yuvarla } from '../helpers';
 import type { CommonParams, EvimParams } from '../types';
 
 // ============================================================
@@ -76,12 +76,10 @@ describe('hesaplaEvimNBD — organization fee', () => {
   });
 
   it('includes cash org fee in T=0 (via maliyetNBD)', () => {
-    // P=0, finansmanTutari=5M, O_pesin = 400000 * 1.0 = 400,000
     const common = makeCommon({ R: 0 });
     const evim2 = makeEvim({ orgUcretPesinOrani: 1.0, orgUcretTaksitSayisi: 0 });
     const result = hesaplaEvimNBD(common, evim2);
 
-    // T=0: P(0) + O_pesin(400,000) = 400,000
     // First entry should have no org taksit
     expect(result.aylikNakitAkisi[0].orgUcretTaksit).toBe(0);
   });
@@ -98,6 +96,19 @@ describe('hesaplaEvimNBD — organization fee', () => {
     }
     // Month 5 should have no org taksit
     expect(result.aylikNakitAkisi[4].orgUcretTaksit).toBe(0);
+  });
+
+  it('org fee parameters are configurable', () => {
+    const common = makeCommon({ R: 0 });
+    // Non-standard: 30% upfront, 6 installments
+    const evim = makeEvim({ orgUcretPesinOrani: 0.30, orgUcretTaksitSayisi: 6 });
+    const result = hesaplaEvimNBD(common, evim);
+
+    // O_toplam=400k, O_pesin=120k, O_taksit=(400k-120k)/6 ≈ 46,667
+    const org1 = result.aylikNakitAkisi[0].orgUcretTaksit;
+    expect(org1).toBeCloseTo(46_666.67, 0);
+    // Month 7 should have no org taksit
+    expect(result.aylikNakitAkisi[6].orgUcretTaksit).toBe(0);
   });
 });
 
@@ -120,16 +131,27 @@ describe('hesaplaEvimNBD — rent during waiting', () => {
     }
   });
 
-  it('applies rent increase rate', () => {
+  it('first month rent equals K_0 exactly (no off-by-one)', () => {
+    const r_kira = yillikToAylik(0.30);
+    const common = makeCommon({ K_0: 27_500, r_kira, R: 0 });
+    const evim = makeEvim({ t_teslim: 48 });
+    const result = hesaplaEvimNBD(common, evim);
+
+    // Month 1 rent must be exactly K_0
+    expect(result.aylikNakitAkisi[0].kira).toBe(27_500);
+  });
+
+  it('applies rent increase rate starting from month 2', () => {
     const r_kira = yillikToAylik(0.50);
     const common = makeCommon({ K_0: 25_000, r_kira, R: 0 });
     const evim = makeEvim({ t_teslim: 48 });
     const result = hesaplaEvimNBD(common, evim);
 
-    // Month 1 rent
-    const expectedRent1 = getKira(25_000, r_kira, 1);
-    expect(result.aylikNakitAkisi[0].kira).toBeCloseTo(expectedRent1, 0);
-
+    // Month 1 rent = K_0
+    expect(result.aylikNakitAkisi[0].kira).toBe(25_000);
+    // Month 2 rent = K_0 * (1 + r_kira)
+    const expectedRent2 = getKira(25_000, r_kira, 2);
+    expect(result.aylikNakitAkisi[1].kira).toBeCloseTo(expectedRent2, 0);
     // Month 12 rent should be higher than month 1
     expect(result.aylikNakitAkisi[11].kira).toBeGreaterThan(result.aylikNakitAkisi[0].kira);
   });
@@ -201,10 +223,10 @@ describe('hesaplaEvimNBD — installments', () => {
 });
 
 // ============================================================
-// Post-delivery insurance
+// Post-delivery insurance — starts at delivery month
 // ============================================================
 describe('hesaplaEvimNBD — insurance after delivery', () => {
-  it('adds insurance every 12 months after delivery', () => {
+  it('adds insurance at delivery month and every 12 months after', () => {
     const common = makeCommon({ R: 0 });
     const evim = makeEvim({
       t_teslim: 12,
@@ -214,12 +236,12 @@ describe('hesaplaEvimNBD — insurance after delivery', () => {
     });
     const result = hesaplaEvimNBD(common, evim);
 
+    // Month 12 (delivery month, 0 months after) — first insurance premium
+    expect(result.aylikNakitAkisi[11].sigortaEkMaliyet).toBe(3_500);
     // 12 months after delivery = month 24
     expect(result.aylikNakitAkisi[23].sigortaEkMaliyet).toBe(3_500);
     // 24 months after delivery = month 36
     expect(result.aylikNakitAkisi[35].sigortaEkMaliyet).toBe(3_500);
-    // Month 12 (delivery month, 0 months after) — no insurance yet
-    expect(result.aylikNakitAkisi[11].sigortaEkMaliyet).toBe(0);
     // Month 18 (6 months after delivery) — not a 12-month boundary
     expect(result.aylikNakitAkisi[17].sigortaEkMaliyet).toBe(0);
   });
@@ -235,57 +257,36 @@ describe('hesaplaEvimNBD — insurance after delivery', () => {
     for (let i = 0; i < 47; i++) {
       expect(result.aylikNakitAkisi[i].sigortaEkMaliyet).toBe(0);
     }
+    // Month 48 (delivery) should have insurance
+    expect(result.aylikNakitAkisi[47].sigortaEkMaliyet).toBe(5_000);
   });
 });
 
 // ============================================================
-// Waiting cost adjustment (beklemeFarki)
+// beklemeFarki REMOVED — NBD is pure cash-flow based
 // ============================================================
-describe('hesaplaEvimNBD — waiting cost adjustment', () => {
-  it('with r_ev=0 and R=0, beklemeFarki is 0', () => {
+describe('hesaplaEvimNBD — no synthetic waiting cost adjustment', () => {
+  it('maliyetNBD equals T0 + sum of discounted cash flows (no beklemeFarki)', () => {
     const common = makeCommon({ R: 0, r_ev: 0, K_0: 0 });
     const evim = makeEvim({ t_teslim: 48 });
     const result = hesaplaEvimNBD(common, evim);
 
-    // beklemeFarki = F/(1+0)^48 - F = F - F = 0
-    // So maliyetNBD should equal sum of all cash flows + T=0
     const sumCashFlows = result.aylikNakitAkisi.reduce((s, e) => s + e.toplamCikis, 0);
-    const expectedNBD = (common.P + (common.F - common.P) * evim.O_oran * 0.5) + sumCashFlows;
+    const T0 = common.P + (common.F - common.P) * evim.O_oran * 0.5;
+    const expectedNBD = T0 + sumCashFlows;
     expect(result.maliyetNBD).toBeCloseTo(expectedNBD, 0);
   });
 
-  it('with r_ev>0 and R=0, beklemeFarki adds to cost', () => {
-    const r_ev = yillikToAylik(0.30);
+  it('r_ev does not affect maliyetNBD (no synthetic adjustment)', () => {
     const common1 = makeCommon({ R: 0, r_ev: 0, K_0: 0 });
-    const common2 = makeCommon({ R: 0, r_ev, K_0: 0 });
+    const common2 = makeCommon({ R: 0, r_ev: yillikToAylik(0.30), K_0: 0 });
     const evim = makeEvim({ t_teslim: 48 });
 
     const result1 = hesaplaEvimNBD(common1, evim);
     const result2 = hesaplaEvimNBD(common2, evim);
 
-    // When r_ev>0 and R=0: F_teslim > F, so beklemeFarki = F_teslim - F > 0
-    // This means result2.maliyetNBD > result1.maliyetNBD
-    expect(result2.maliyetNBD).toBeGreaterThan(result1.maliyetNBD);
-  });
-
-  it('beklemeFarki formula is correct', () => {
-    const R = 0.02;
-    const r_ev = 0.01;
-    const common = makeCommon({ R, r_ev, K_0: 0 });
-    const evim = makeEvim({ t_teslim: 24 });
-
-    const result = hesaplaEvimNBD(common, evim);
-
-    // Calculate expected beklemeFarki
-    const F_teslim = varlikDegeri(5_000_000, r_ev, 24);
-    const expectedBeklemeFarki = indirge(F_teslim, R, 24) - 5_000_000;
-
-    // maliyetNBD = T0 + sum(discounted cash flows) + beklemeFarki
-    const T0 = common.P + (5_000_000 - common.P) * 0.08 * 0.50;
-    const sumDiscounted = result.aylikNakitAkisi.reduce((s, e) => s + e.indirgenmisDeger, 0);
-    const expectedNBD = T0 + sumDiscounted + expectedBeklemeFarki;
-
-    expect(result.maliyetNBD).toBeCloseTo(expectedNBD, 0);
+    // Without beklemeFarki, r_ev has no effect on cash flows
+    expect(result1.maliyetNBD).toBe(result2.maliyetNBD);
   });
 });
 
@@ -293,23 +294,20 @@ describe('hesaplaEvimNBD — waiting cost adjustment', () => {
 // NPV discounting
 // ============================================================
 describe('hesaplaEvimNBD — NPV discounting', () => {
-  it('with R=0, maliyetNBD equals toplamOdeme + beklemeFarki', () => {
+  it('with R=0, maliyetNBD equals toplamOdeme', () => {
     const common = makeCommon({ R: 0, r_ev: 0, K_0: 0 });
     const evim = makeEvim();
     const result = hesaplaEvimNBD(common, evim);
 
-    // beklemeFarki = 0 when r_ev=0 and R=0
     expect(result.maliyetNBD).toBeCloseTo(result.toplamOdeme, 0);
   });
 
-  it('with R>0, future payments are discounted', () => {
+  it('with R>0, maliyetNBD is less than toplamOdeme', () => {
     const R = yillikToAylik(0.40);
     const common = makeCommon({ R, K_0: 0, r_ev: 0 });
     const evim = makeEvim();
     const result = hesaplaEvimNBD(common, evim);
 
-    // beklemeFarki with r_ev=0: F/(1+R)^t_teslim - F < 0 (discount reduces value)
-    // So maliyetNBD < toplamOdeme (discounting + negative beklemeFarki)
     expect(result.maliyetNBD).toBeLessThan(result.toplamOdeme);
   });
 
@@ -379,6 +377,14 @@ describe('hesaplaEvimNBD — immediate delivery (t_teslim=1)', () => {
 
     expect(result.toplamKira).toBe(0);
   });
+
+  it('insurance starts at month 1 (delivery month)', () => {
+    const common = makeCommon({ R: 0 });
+    const evim = makeEvim({ t_teslim: 1, daskYillik: 1_000 });
+    const result = hesaplaEvimNBD(common, evim);
+
+    expect(result.aylikNakitAkisi[0].sigortaEkMaliyet).toBe(1_000);
+  });
 });
 
 // ============================================================
@@ -392,9 +398,43 @@ describe('hesaplaEvimNBD — delivery at end (t_teslim=n_e)', () => {
 
     // 119 months of rent (t=1..119)
     expect(result.toplamKira).toBe(10_000 * 119);
-    // No insurance (delivery at last month, no months after)
-    for (const entry of result.aylikNakitAkisi) {
-      expect(entry.sigortaEkMaliyet).toBe(0);
+  });
+
+  it('insurance at delivery month (last month)', () => {
+    const common = makeCommon({ R: 0 });
+    const evim = makeEvim({ t_teslim: 120, n_e: 120, daskYillik: 1_000 });
+    const result = hesaplaEvimNBD(common, evim);
+
+    // Only the last month should have insurance (delivery at month 120)
+    expect(result.aylikNakitAkisi[119].sigortaEkMaliyet).toBe(1_000);
+    for (let i = 0; i < 119; i++) {
+      expect(result.aylikNakitAkisi[i].sigortaEkMaliyet).toBe(0);
     }
+  });
+});
+
+// ============================================================
+// Result consistency: summary matches cash flow table
+// ============================================================
+describe('hesaplaEvimNBD — result consistency', () => {
+  it('toplamOdeme equals T0 + sum of all toplamCikis', () => {
+    const common = makeCommon({ R: yillikToAylik(0.30), K_0: 20_000, r_kira: yillikToAylik(0.40) });
+    const evim = makeEvim({ t_teslim: 48, daskYillik: 2_000 });
+    const result = hesaplaEvimNBD(common, evim);
+
+    const T0 = common.P + (common.F - common.P) * evim.O_oran * (evim.orgUcretPesinOrani ?? 0.5);
+    const sumCF = result.aylikNakitAkisi.reduce((s, e) => s + e.toplamCikis, 0);
+    expect(result.toplamOdeme).toBeCloseTo(T0 + sumCF, 0);
+  });
+
+  it('maliyetNBD equals T0 + sum of all indirgenmisDeger', () => {
+    const R = yillikToAylik(0.30);
+    const common = makeCommon({ R, K_0: 20_000, r_kira: yillikToAylik(0.40), r_ev: 0 });
+    const evim = makeEvim({ t_teslim: 48, daskYillik: 2_000 });
+    const result = hesaplaEvimNBD(common, evim);
+
+    const T0 = common.P + (common.F - common.P) * evim.O_oran * (evim.orgUcretPesinOrani ?? 0.5);
+    const sumDiscounted = result.aylikNakitAkisi.reduce((s, e) => s + e.indirgenmisDeger, 0);
+    expect(result.maliyetNBD).toBeCloseTo(T0 + sumDiscounted, 0);
   });
 });

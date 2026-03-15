@@ -8,12 +8,30 @@ export function yillikToAylik(yillik: number): number {
   return Math.pow(1 + yillik, 1 / 12) - 1;
 }
 
+/** Alias with a more descriptive English name. */
+export const annualToMonthlyCompound = yillikToAylik;
+
 /**
  * Converts a monthly compound rate to its annual equivalent.
  * Formula: (1 + monthly)^12 - 1
  */
 export function aylikToYillik(aylik: number): number {
   return Math.pow(1 + aylik, 12) - 1;
+}
+
+/**
+ * Normalizes a credit interest rate to a monthly compound rate.
+ *
+ * @param rate   The raw rate value (decimal, e.g. 0.0254 for 2.54%)
+ * @param period Whether the rate is 'monthly' (use directly) or 'annual' (compound-convert)
+ * @returns Monthly compound rate (decimal)
+ */
+export function normalizeCreditMonthlyRate(
+  rate: number,
+  period: 'monthly' | 'annual' = 'monthly',
+): number {
+  if (period === 'annual') return yillikToAylik(rate);
+  return rate;
 }
 
 /**
@@ -63,11 +81,13 @@ export function getTaksit(
 
 /**
  * Calculates the rent amount at month t with compound growth.
- * Formula: K_0 * (1 + r_kira)^t
+ * Month 1 returns exactly K_0 (today's rent). Growth starts from month 2.
+ * Formula: K_0 * (1 + r_kira)^(t - 1)
  */
 export function getKira(K_0: number, r_kira: number, t: number): number {
   if (K_0 === 0) return 0;
-  return K_0 * Math.pow(1 + r_kira, t);
+  if (t <= 0) return K_0;
+  return K_0 * Math.pow(1 + r_kira, t - 1);
 }
 
 /**
@@ -110,13 +130,18 @@ export function hesaplaSabitTaksit(F: number, P: number, n_e: number): number {
 }
 
 /**
- * Calculates the earliest delivery month for Evim (cekilissiz).
- * Rules:
- *  - Cumulative savings >= 40% of F
+ * Estimates the earliest delivery month for Evim (çekilişsiz) using a
+ * heuristic based on typical industry practice.
+ *
+ * ⚠️ This is NOT an official formula or regulatory guarantee. Actual delivery
+ * dates depend on the specific company, plan, and market conditions.
+ *
+ * Heuristic rules (configurable assumption):
+ *  - Cumulative savings (P + installments) >= 40% of F
  *  - t >= max(5, ceil(n_e * 0.40 * (1 - P/F)))
- * Fallback: ceil(n_e / 2)
+ * Deterministic fallback when conditions are never met: ceil(n_e / 2)
  */
-export function hesaplaTeslimAyi(
+export function estimateDeliveryMonth(
   F: number,
   P: number,
   plan: TaksitPlan,
@@ -139,3 +164,6 @@ export function hesaplaTeslimAyi(
 
   return Math.ceil(n_e / 2);
 }
+
+/** @deprecated Use estimateDeliveryMonth instead */
+export const hesaplaTeslimAyi = estimateDeliveryMonth;

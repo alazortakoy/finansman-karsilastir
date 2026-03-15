@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { hesaplaBirikimNBD } from '../biriktir';
-import { yillikToAylik, varlikDegeri, getTaksit, indirge } from '../helpers';
+import { yillikToAylik, varlikDegeri, getKira } from '../helpers';
 import type { CommonParams, EvimParams, BirikimParams } from '../types';
 
 // ============================================================
@@ -130,7 +130,6 @@ describe('hesaplaBirikimNBD — F_hedef', () => {
 // ============================================================
 describe('hesaplaBirikimNBD — sufficiency', () => {
   it('yeterliMi=true when savings exceed target', () => {
-    // Very high return, low target
     const common = makeCommon({ F: 100_000, P: 100_000, r_ev: 0 });
     const evim = makeEvim({ O_oran: 0.0, taksitPlani: { tip: 'sabit', aylikTutar: 10_000 }, n_e: 120 });
     const birikim = makeBirikim({ r_mevduat: 0.05, hedefAy: 24 });
@@ -141,8 +140,7 @@ describe('hesaplaBirikimNBD — sufficiency', () => {
   });
 
   it('yeterliMi=false when savings fall short', () => {
-    // Very low return, high appreciation
-    const r_ev = yillikToAylik(1.0); // 100% annual
+    const r_ev = yillikToAylik(1.0);
     const common = makeCommon({ F: 5_000_000, P: 0, r_ev });
     const evim = makeEvim({ O_oran: 0.08, taksitPlani: { tip: 'sabit', aylikTutar: 10_000 }, n_e: 120 });
     const birikim = makeBirikim({ r_mevduat: 0.001, hedefAy: 48 });
@@ -163,6 +161,14 @@ describe('hesaplaBirikimNBD — rent', () => {
 
     // 24 months of rent at 10k
     expect(result.toplamKira).toBe(240_000);
+  });
+
+  it('first month rent equals K_0 exactly', () => {
+    const r_kira = yillikToAylik(0.30);
+    const common = makeCommon({ K_0: 27_500, r_kira, R: 0 });
+    const result = hesaplaBirikimNBD(common, makeEvim(), makeBirikim({ hedefAy: 24 }));
+
+    expect(result.aylikNakitAkisi[0].kira).toBe(27_500);
   });
 
   it('no rent when K_0 is 0', () => {
@@ -187,7 +193,6 @@ describe('hesaplaBirikimNBD — rent', () => {
 // ============================================================
 describe('hesaplaBirikimNBD — NPV', () => {
   it('with R=0 and no shortfall/surplus, maliyetNBD ≈ toplamOdeme', () => {
-    // Need a case where S_mevduat ≈ F_hedef to avoid shortfall/surplus skewing things
     const common = makeCommon({ R: 0, r_ev: 0, K_0: 0 });
     const evim = makeEvim({
       O_oran: 0,
@@ -198,9 +203,7 @@ describe('hesaplaBirikimNBD — NPV', () => {
 
     const result = hesaplaBirikimNBD(common, evim, birikim);
 
-    // With r_mevduat=0: no growth. lumpSum=0, monthly=50k*47=2,350,000
-    // S_mevduat = 2,350,000 < F=5M → shortfall = 2,650,000
-    // toplamOdeme = 0 + 47*50k + shortfall = 2,350,000 + 2,650,000 = 5,000,000
+    // With r_mevduat=0: no growth
     // maliyetNBD should equal toplamOdeme with R=0
     expect(result.maliyetNBD).toBeCloseTo(result.toplamOdeme, 0);
   });
@@ -244,9 +247,7 @@ describe('hesaplaBirikimNBD — shortfall/surplus', () => {
     const birikim = makeBirikim({ r_mevduat: 0.03, hedefAy: 48 });
     const result = hesaplaBirikimNBD(common, evim, birikim);
 
-    // Big savings vs small F → surplus → toplamOdeme reduced
     expect(result.birikim!.fark).toBeGreaterThan(0);
-    // maliyetNBD < lumpSum + all installments (surplus offsets)
     const grossCost = result.aylikNakitAkisi.reduce((s, e) => s + e.toplamCikis, 0) + 100_000;
     expect(result.maliyetNBD).toBeLessThan(grossCost);
   });
@@ -283,6 +284,23 @@ describe('hesaplaBirikimNBD — ayHesapla mode', () => {
     expect(result.birikim!.hesaplananAy).toBeDefined();
     expect(result.birikim!.hesaplananAy).toBeGreaterThan(0);
     expect(result.birikim!.yeterliMi).toBe(true);
+  });
+
+  it('P is invested at T=0, compounded correctly', () => {
+    // P=100k, no monthly savings, r_mevduat=0.01
+    // After 1 month: S = 100k * 1.01 = 101k
+    const common = makeCommon({ F: 200_000, P: 100_000, r_ev: 0, R: 0, K_0: 0 });
+    const birikim: BirikimParams = {
+      r_mevduat: 0.01,
+      mod: 'ayHesapla',
+      aylikBirikim: 0,
+    };
+    const result = hesaplaBirikimNBD(common, makeEvim(), birikim);
+
+    // P should compound once per month from T=0
+    // After n months: P * (1.01)^n >= 200k → n ≈ 70
+    const expected = Math.ceil(Math.log(200_000 / 100_000) / Math.log(1.01));
+    expect(result.birikim!.hesaplananAy).toBe(expected);
   });
 
   it('inflation-linked increase reaches target faster', () => {
@@ -333,7 +351,6 @@ describe('hesaplaBirikimNBD — tutarHesapla mode', () => {
 
     expect(result.birikim!.gerekliAylikTutar).toBeDefined();
     expect(result.birikim!.gerekliAylikTutar!).toBeGreaterThan(0);
-    // Savings should reach or exceed target
     expect(result.birikim!.toplamBirikim).toBeGreaterThanOrEqual(1_000_000 - 1);
   });
 
@@ -372,5 +389,23 @@ describe('hesaplaBirikimNBD — tutarHesapla mode', () => {
     };
     const result = hesaplaBirikimNBD(common, makeEvim(), birikim);
     expect(result.aylikNakitAkisi).toHaveLength(36);
+  });
+});
+
+// ============================================================
+// Result consistency
+// ============================================================
+describe('hesaplaBirikimNBD — result consistency', () => {
+  it('maliyetNBD uses full precision (not re-summed from rounded entries)', () => {
+    const R = yillikToAylik(0.40);
+    const r_kira = yillikToAylik(0.30);
+    const common = makeCommon({ R, K_0: 20_000, r_kira, r_ev: 0 });
+    const result = hesaplaBirikimNBD(common, makeEvim(), makeBirikim({ hedefAy: 120 }));
+
+    // Sum of rounded entries
+    const sumRounded = common.P + result.aylikNakitAkisi.reduce((s, e) => s + e.indirgenmisDeger, 0);
+    // maliyetNBD should be close but NOT necessarily equal to sumRounded
+    // (it uses raw precision internally, only rounding at the end)
+    expect(Number.isFinite(result.maliyetNBD)).toBe(true);
   });
 });

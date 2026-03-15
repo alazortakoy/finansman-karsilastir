@@ -2,12 +2,15 @@ import { describe, it, expect } from 'vitest';
 import {
   yillikToAylik,
   aylikToYillik,
+  annualToMonthlyCompound,
+  normalizeCreditMonthlyRate,
   indirge,
   getTaksit,
   getKira,
   yuvarla,
   annuite,
   varlikDegeri,
+  estimateDeliveryMonth,
   hesaplaTeslimAyi,
   hesaplaSabitTaksit,
 } from '../helpers';
@@ -62,6 +65,40 @@ describe('aylikToYillik', () => {
       const recovered = aylikToYillik(monthly);
       expect(recovered).toBeCloseTo(annual, 10);
     }
+  });
+});
+
+// ============================================================
+// annualToMonthlyCompound (alias)
+// ============================================================
+describe('annualToMonthlyCompound', () => {
+  it('is an alias for yillikToAylik', () => {
+    expect(annualToMonthlyCompound(0.30)).toBe(yillikToAylik(0.30));
+  });
+});
+
+// ============================================================
+// normalizeCreditMonthlyRate
+// ============================================================
+describe('normalizeCreditMonthlyRate', () => {
+  it('returns rate unchanged when period is monthly', () => {
+    expect(normalizeCreditMonthlyRate(0.02, 'monthly')).toBe(0.02);
+  });
+
+  it('converts annual rate to monthly when period is annual', () => {
+    const result = normalizeCreditMonthlyRate(0.30, 'annual');
+    expect(result).toBeCloseTo(yillikToAylik(0.30), 12);
+  });
+
+  it('defaults to monthly when period is not specified', () => {
+    expect(normalizeCreditMonthlyRate(0.02)).toBe(0.02);
+  });
+
+  it('same value gives very different monthly rates for annual vs monthly', () => {
+    const asMonthly = normalizeCreditMonthlyRate(0.0254, 'monthly');
+    const asAnnual = normalizeCreditMonthlyRate(0.0254, 'annual');
+    // 2.54% monthly is MUCH higher effective rate than 2.54% annual
+    expect(asMonthly).toBeGreaterThan(asAnnual * 10);
   });
 });
 
@@ -176,19 +213,31 @@ describe('getKira', () => {
     expect(getKira(0, 0.03, 12)).toBe(0);
   });
 
-  it('returns K_0 when r_kira is 0 and t is 0', () => {
-    expect(getKira(25_000, 0, 0)).toBe(25_000);
+  it('returns K_0 when t is 0', () => {
+    expect(getKira(25_000, 0.03, 0)).toBe(25_000);
   });
 
-  it('calculates rent with monthly increase', () => {
-    // 25000 * (1.03)^12 ≈ 35_644.02
+  it('returns K_0 at month 1 (no increase on first month)', () => {
+    // First month rent equals the input value exactly
+    expect(getKira(25_000, 0.03, 1)).toBe(25_000);
+    expect(getKira(27_500, 0.02, 1)).toBe(27_500);
+  });
+
+  it('calculates rent with monthly increase starting from month 2', () => {
+    // Month 2: K_0 * (1.03)^1 = 25750
+    expect(getKira(25_000, 0.03, 2)).toBeCloseTo(25_750, 2);
+  });
+
+  it('calculates rent at month 12', () => {
+    // K_0 * (1.03)^(12-1) = K_0 * (1.03)^11 ≈ 34,605.85
     const rent = getKira(25_000, 0.03, 12);
-    expect(rent).toBeCloseTo(35_644.02, 0);
+    expect(rent).toBeCloseTo(25_000 * Math.pow(1.03, 11), 2);
   });
 
-  it('calculates rent at month 1 with increase', () => {
-    // 25000 * 1.03 = 25750
-    expect(getKira(25_000, 0.03, 1)).toBeCloseTo(25_750, 2);
+  it('returns K_0 for all months when r_kira is 0', () => {
+    expect(getKira(25_000, 0, 1)).toBe(25_000);
+    expect(getKira(25_000, 0, 12)).toBe(25_000);
+    expect(getKira(25_000, 0, 120)).toBe(25_000);
   });
 });
 
@@ -287,66 +336,58 @@ describe('hesaplaSabitTaksit', () => {
 });
 
 // ============================================================
-// hesaplaTeslimAyi
+// estimateDeliveryMonth (heuristic)
 // ============================================================
-describe('hesaplaTeslimAyi', () => {
+describe('estimateDeliveryMonth', () => {
+  it('is also exported as hesaplaTeslimAyi for backward compatibility', () => {
+    expect(hesaplaTeslimAyi).toBe(estimateDeliveryMonth);
+  });
+
   it('calculates delivery month for basic scenario', () => {
     // F=5M, P=0, sabit 55556/ay, n_e=120
-    // Need cumulative >= 2M (40% of 5M) AND t >= max(5, ceil(120*0.40*(1-0)))=48
-    // 55556 * 36 = 2,000,016 >= 2M → kümülatif OK at t=36
-    // But sureSiniri = ceil(120*0.40*1) = 48, so t must be >= 48
-    // At t=48: cumulative = 55556*48 = 2,666,688 >= 2M ✓ and t=48 >= 48 ✓
+    // sureSiniri = ceil(120*0.40*1) = 48, so t must be >= 48
     const plan: TaksitPlan = { tip: 'sabit', aylikTutar: 55_556 };
-    const result = hesaplaTeslimAyi(5_000_000, 0, plan, 120);
+    const result = estimateDeliveryMonth(5_000_000, 0, plan, 120);
     expect(result).toBe(48);
   });
 
   it('accounts for down payment reducing time requirement', () => {
     // F=5M, P=1M, sabit 55556/ay, n_e=120
-    // cumulative starts at 1M
-    // 40% of 5M = 2M → need 1M more from taksit → t >= 18 (55556*18=999,998, ~19 needed)
     // sureSiniri = ceil(120*0.40*(1-0.2)) = ceil(38.4) = 39
-    // t must be >= max(5, 39) = 39
-    // At t=19: cumulative = 1M + 55556*19 = 2,055,564 >= 2M ✓ but t=19 < 39
-    // At t=39: cumulative = 1M + 55556*39 = 3,166,684 ✓ and t=39 >= 39 ✓
     const plan: TaksitPlan = { tip: 'sabit', aylikTutar: 55_556 };
-    const result = hesaplaTeslimAyi(5_000_000, 1_000_000, plan, 120);
+    const result = estimateDeliveryMonth(5_000_000, 1_000_000, plan, 120);
     expect(result).toBe(39);
   });
 
   it('returns minimum 5 even with large down payment', () => {
-    // F=5M, P=4M (80%), sabit 100000/ay, n_e=120
-    // cumulative starts at 4M >= 2M ✓
-    // sureSiniri = ceil(120*0.40*(1-0.8)) = ceil(9.6) = 10
-    // t must be >= max(5, 10) = 10
-    // At t=1: cumulative ok but t < 10
-    // At t=10: ✓
     const plan: TaksitPlan = { tip: 'sabit', aylikTutar: 100_000 };
-    const result = hesaplaTeslimAyi(5_000_000, 4_000_000, plan, 120);
+    const result = estimateDeliveryMonth(5_000_000, 4_000_000, plan, 120);
     expect(result).toBe(10);
   });
 
   it('returns fallback (n_e/2) when conditions never met', () => {
     // Very small installments that never reach 40%
     const plan: TaksitPlan = { tip: 'sabit', aylikTutar: 100 };
-    const result = hesaplaTeslimAyi(5_000_000, 0, plan, 120);
+    const result = estimateDeliveryMonth(5_000_000, 0, plan, 120);
     expect(result).toBe(60); // ceil(120/2)
   });
 
+  it('is deterministic — same inputs always produce same output', () => {
+    const plan: TaksitPlan = { tip: 'sabit', aylikTutar: 55_556 };
+    const r1 = estimateDeliveryMonth(5_000_000, 0, plan, 120);
+    const r2 = estimateDeliveryMonth(5_000_000, 0, plan, 120);
+    const r3 = estimateDeliveryMonth(5_000_000, 0, plan, 120);
+    expect(r1).toBe(r2);
+    expect(r2).toBe(r3);
+  });
+
   it('works with yillikArtisli plan', () => {
-    // F=5M, P=0, start=40000, 20% annual increase, n_e=120
     const plan: TaksitPlan = {
       tip: 'yillikArtisli',
       baslangicTutar: 40_000,
       yillikArtisOrani: 0.20,
     };
-    const result = hesaplaTeslimAyi(5_000_000, 0, plan, 120);
-    // sureSiniri = 48, cumulative must reach 2M
-    // Year 0 (1-12): 40000*12 = 480,000
-    // Year 1 (13-24): 48000*12 = 576,000 → total 1,056,000
-    // Year 2 (25-36): 57600*12 = 691,200 → total 1,747,200
-    // Year 3 (37-48): 69120*12 = 829,440 → total 2,576,640
-    // At some month in year 3 cumulative crosses 2M, but t must be >= 48
+    const result = estimateDeliveryMonth(5_000_000, 0, plan, 120);
     expect(result).toBeGreaterThanOrEqual(5);
     expect(result).toBeLessThanOrEqual(120);
   });

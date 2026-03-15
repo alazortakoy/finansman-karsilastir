@@ -21,11 +21,23 @@ import { getTaksit, getKira, indirge, varlikDegeri, yuvarla } from './helpers';
  *    savings and checks sufficiency at hedefAy.
  */
 
+// Internal result shape that carries raw (non-rounded) totals alongside
+// display-rounded cash flow entries, so the public API can use full precision.
+interface ModeResult {
+  nakitAkislari: NakitAkisi[];
+  birikimDetay: BirikimDetay;
+  toplamKira: number;
+  rawToplamOdeme: number;
+  rawMaliyetNBD: number;
+  hesaplananAy?: number;
+  gerekliAylikTutar?: number;
+}
+
 // ── Mode: ayHesapla ─────────────────────────────────────────────────
 function hesaplaAyModu(
   common: CommonParams,
   birikim: BirikimParams,
-): { hesaplananAy: number; birikimDetay: BirikimDetay; nakitAkislari: NakitAkisi[]; toplamKira: number } {
+): ModeResult {
   const { F, P } = common;
   const R = common.R ?? 0;
   const K_0 = common.K_0 ?? 0;
@@ -38,8 +50,11 @@ function hesaplaAyModu(
 
   const MAX_AY = 600; // 50 years safety limit
 
-  let S = P * (1 + r_mevduat); // P invested at T=0
+  // P is invested at T=0. At end of month 1 it should have 1 month of growth.
+  let S = P;
   let toplamKira = 0;
+  let rawToplamOdeme = P;
+  let rawMaliyetNBD = P;
   const aylikNakitAkisi: NakitAkisi[] = [];
   let kumulatifCikis = P;
   let hesaplananAy = MAX_AY;
@@ -48,7 +63,7 @@ function hesaplaAyModu(
     // Monthly savings with inflation-linked increase
     const aylikTutar = aylikBirikim * Math.pow(1 + artisOrani, t - 1);
 
-    // Add this month's savings and compound previous balance
+    // Compound previous balance and add this month's contribution
     S = S * (1 + r_mevduat) + aylikTutar;
 
     // Asset value at month t
@@ -64,6 +79,10 @@ function hesaplaAyModu(
     const toplamCikis = aylikTutar + kira;
     kumulatifCikis += toplamCikis;
     const indirgenmisDeger = indirge(toplamCikis, R, t);
+
+    // Track raw totals at full precision
+    rawToplamOdeme += toplamCikis;
+    rawMaliyetNBD += indirgenmisDeger;
 
     aylikNakitAkisi.push({
       ay: t,
@@ -95,6 +114,8 @@ function hesaplaAyModu(
     },
     nakitAkislari: aylikNakitAkisi,
     toplamKira,
+    rawToplamOdeme,
+    rawMaliyetNBD,
   };
 }
 
@@ -102,7 +123,7 @@ function hesaplaAyModu(
 function hesaplaTutarModu(
   common: CommonParams,
   birikim: BirikimParams,
-): { gerekliAylikTutar: number; birikimDetay: BirikimDetay; nakitAkislari: NakitAkisi[]; toplamKira: number } {
+): ModeResult {
   const { F, P } = common;
   const r_ev = common.r_ev;
   const { r_mevduat } = birikim;
@@ -164,7 +185,7 @@ function buildNakitAkisiForTutar(
   gerekliTutar: number,
   hedefAy: number,
   F_hedef: number,
-): { gerekliAylikTutar: number; birikimDetay: BirikimDetay; nakitAkislari: NakitAkisi[]; toplamKira: number } {
+): ModeResult {
   const { P } = common;
   const R = common.R ?? 0;
   const K_0 = common.K_0 ?? 0;
@@ -177,6 +198,8 @@ function buildNakitAkisiForTutar(
   S += fvMonthly;
 
   let toplamKira = 0;
+  let rawToplamOdeme = P;
+  let rawMaliyetNBD = P;
   let kumulatifCikis = P;
   const aylikNakitAkisi: NakitAkisi[] = [];
 
@@ -192,6 +215,9 @@ function buildNakitAkisiForTutar(
     const toplamCikis = aylikTutar + kira;
     kumulatifCikis += toplamCikis;
     const indirgenmisDeger = indirge(toplamCikis, R, t);
+
+    rawToplamOdeme += toplamCikis;
+    rawMaliyetNBD += indirgenmisDeger;
 
     aylikNakitAkisi.push({
       ay: t,
@@ -216,15 +242,23 @@ function buildNakitAkisiForTutar(
     },
     nakitAkislari: aylikNakitAkisi,
     toplamKira,
+    rawToplamOdeme,
+    rawMaliyetNBD,
   };
 }
 
 // ── Mode: piyangoKarsilastir (original mode) ────────────────────────
+// Redirects Evim installments (+ org fee) to a savings account and checks
+// whether the accumulated sum covers the asset value at hedefAy.
+//
+// The last month (t = hedefAy) has taksit = 0 because at that point the
+// investor buys the asset rather than saving. This is intentional: the
+// savings FV only includes contributions from months 1..hedefAy-1.
 function hesaplaPiyangoModu(
   common: CommonParams,
   evim: EvimParams,
   birikim: BirikimParams,
-): { birikimDetay: BirikimDetay; nakitAkislari: NakitAkisi[]; toplamKira: number } {
+): ModeResult {
   const { F, P } = common;
   const R = common.R ?? 0;
   const K_0 = common.K_0 ?? 0;
@@ -256,8 +290,10 @@ function hesaplaPiyangoModu(
   const fark = S_mevduat - F_hedef;
   const yeterliMi = fark >= 0;
 
-  // Step 4: Build cash flow
+  // Step 4: Build cash flow and track raw totals
   let toplamKira = 0;
+  let rawToplamOdeme = lumpSum;
+  let rawMaliyetNBD = lumpSum;
   let kumulatifCikis = lumpSum;
   const aylikNakitAkisi: NakitAkisi[] = [];
 
@@ -273,6 +309,9 @@ function hesaplaPiyangoModu(
     const toplamCikis = taksit + kira;
     kumulatifCikis += toplamCikis;
     const indirgenmisDeger = indirge(toplamCikis, R, t);
+
+    rawToplamOdeme += toplamCikis;
+    rawMaliyetNBD += indirgenmisDeger;
 
     aylikNakitAkisi.push({
       ay: t,
@@ -295,6 +334,8 @@ function hesaplaPiyangoModu(
     },
     nakitAkislari: aylikNakitAkisi,
     toplamKira,
+    rawToplamOdeme,
+    rawMaliyetNBD,
   };
 }
 
@@ -310,60 +351,40 @@ export function hesaplaBirikimNBD(
 
   if (mod === 'ayHesapla') {
     const result = hesaplaAyModu(common, birikim);
-    const { nakitAkislari, birikimDetay, toplamKira } = result;
-
-    let maliyetNBD = common.P;
-    let toplamOdeme = common.P;
-    for (const entry of nakitAkislari) {
-      toplamOdeme += entry.toplamCikis;
-      maliyetNBD += entry.indirgenmisDeger;
-    }
 
     return {
-      maliyetNBD: yuvarla(maliyetNBD),
-      toplamOdeme: yuvarla(toplamOdeme),
-      toplamKira: yuvarla(toplamKira),
-      aylikNakitAkisi: nakitAkislari,
-      birikim: birikimDetay,
+      maliyetNBD: yuvarla(result.rawMaliyetNBD),
+      toplamOdeme: yuvarla(result.rawToplamOdeme),
+      toplamKira: yuvarla(result.toplamKira),
+      aylikNakitAkisi: result.nakitAkislari,
+      birikim: result.birikimDetay,
     };
   }
 
   if (mod === 'tutarHesapla') {
     const result = hesaplaTutarModu(common, birikim);
-    const { nakitAkislari, birikimDetay, toplamKira, gerekliAylikTutar } = result;
-
-    let maliyetNBD = common.P;
-    let toplamOdeme = common.P;
-    for (const entry of nakitAkislari) {
-      toplamOdeme += entry.toplamCikis;
-      maliyetNBD += entry.indirgenmisDeger;
-    }
 
     return {
-      maliyetNBD: yuvarla(maliyetNBD),
-      toplamOdeme: yuvarla(toplamOdeme),
-      toplamKira: yuvarla(toplamKira),
-      aylikNakitAkisi: nakitAkislari,
-      birikim: { ...birikimDetay, gerekliAylikTutar },
+      maliyetNBD: yuvarla(result.rawMaliyetNBD),
+      toplamOdeme: yuvarla(result.rawToplamOdeme),
+      toplamKira: yuvarla(result.toplamKira),
+      aylikNakitAkisi: result.nakitAkislari,
+      birikim: { ...result.birikimDetay, gerekliAylikTutar: result.gerekliAylikTutar },
     };
   }
 
   // piyangoKarsilastir mode (original)
   const result = hesaplaPiyangoModu(common, evim, birikim);
-  const { nakitAkislari, birikimDetay, toplamKira } = result;
 
-  const lumpSum = common.P + (common.F - common.P) * evim.O_oran * (evim.orgUcretPesinOrani ?? 0.50);
-  let maliyetNBD = lumpSum;
-  let toplamOdeme = lumpSum;
-  for (const entry of nakitAkislari) {
-    toplamOdeme += entry.toplamCikis;
-    maliyetNBD += entry.indirgenmisDeger;
-  }
-
-  // Shortfall or surplus
+  // Shortfall or surplus adjustment (uses raw birikimDetay values for precision)
   const hedefAy = birikim.hedefAy!;
-  const eksik = Math.max(0, birikimDetay.hedefKonutDegeri - birikimDetay.toplamBirikim);
-  const fazla = Math.max(0, birikimDetay.toplamBirikim - birikimDetay.hedefKonutDegeri);
+  const rawBirikim = result.birikimDetay.toplamBirikim;
+  const rawHedef = result.birikimDetay.hedefKonutDegeri;
+  const eksik = Math.max(0, rawHedef - rawBirikim);
+  const fazla = Math.max(0, rawBirikim - rawHedef);
+
+  let maliyetNBD = result.rawMaliyetNBD;
+  let toplamOdeme = result.rawToplamOdeme;
   maliyetNBD += indirge(eksik, R, hedefAy);
   maliyetNBD -= indirge(fazla, R, hedefAy);
   toplamOdeme += eksik;
@@ -372,8 +393,8 @@ export function hesaplaBirikimNBD(
   return {
     maliyetNBD: yuvarla(maliyetNBD),
     toplamOdeme: yuvarla(toplamOdeme),
-    toplamKira: yuvarla(toplamKira),
-    aylikNakitAkisi: nakitAkislari,
-    birikim: birikimDetay,
+    toplamKira: yuvarla(result.toplamKira),
+    aylikNakitAkisi: result.nakitAkislari,
+    birikim: result.birikimDetay,
   };
 }

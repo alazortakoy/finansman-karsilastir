@@ -1,5 +1,5 @@
 import type { CommonParams, EvimParams, ModelSonuc, NakitAkisi } from './types';
-import { getTaksit, getKira, indirge, varlikDegeri, yuvarla } from './helpers';
+import { getTaksit, getKira, indirge, yuvarla } from './helpers';
 
 /**
  * Calculates the Evim (savings-finance) model result (MaliyetNBD).
@@ -8,7 +8,10 @@ import { getTaksit, getKira, indirge, varlikDegeri, yuvarla } from './helpers';
  *  - T=0: down payment + org fee (cash portion)
  *  - T=1..t_teslim-1: installments + rent (minus rent support) + org fee installments
  *  - T=t_teslim..n_e: post-delivery installments + annual insurance
- *  - Waiting cost adjustment: accounts for delayed asset acquisition vs bank model
+ *
+ * The delayed ownership effect (waiting cost) is NOT added as a synthetic
+ * adjustment. It is naturally reflected through rent payments during the
+ * waiting period and the timing of discounted cash flows.
  */
 export function hesaplaEvimNBD(
   common: CommonParams,
@@ -18,8 +21,6 @@ export function hesaplaEvimNBD(
   const R = common.R ?? 0;
   const K_0 = common.K_0 ?? 0;
   const r_kira = common.r_kira ?? 0;
-  const r_ev = common.r_ev;
-
   const {
     O_oran,
     n_e,
@@ -81,9 +82,9 @@ export function hesaplaEvimNBD(
       // Step 6: Post-delivery installments
       taksit = getTaksit(taksitPlani, t, n_e, t_teslim);
 
-      // Annual insurance: every 12 months from t_teslim
+      // Annual insurance: starting at delivery, then every 12 months
       const monthsSinceDelivery = t - t_teslim;
-      if (monthsSinceDelivery > 0 && monthsSinceDelivery % 12 === 0) {
+      if (monthsSinceDelivery >= 0 && monthsSinceDelivery % 12 === 0) {
         sigortaEkMaliyet = yillikEkMaliyet;
       }
     }
@@ -106,12 +107,6 @@ export function hesaplaEvimNBD(
       indirgenmisDeger: yuvarla(indirgenmisDeger),
     });
   }
-
-  // Step 7: Waiting cost adjustment
-  // beklemeFarki = F_teslim / (1+R)^t_teslim - F
-  const F_teslim = varlikDegeri(F, r_ev, t_teslim);
-  const beklemeFarki = indirge(F_teslim, R, t_teslim) - F;
-  maliyetNBD += beklemeFarki;
 
   return {
     maliyetNBD: yuvarla(maliyetNBD),

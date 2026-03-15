@@ -22,8 +22,9 @@ export interface CommonParams {
 // --- 2.2 Bank Loan Parameters ---
 
 export interface BankaParams {
-  r_b: number;          // Monthly loan interest rate (decimal)
+  r_b: number;          // Loan interest rate (decimal) — interpreted per creditRatePeriod
   n_b: number;          // Loan term (months)
+  creditRatePeriod?: 'monthly' | 'annual'; // How r_b is expressed (default: 'monthly')
 
   // One-time costs (all optional, default 0)
   dosyaMasrafi?: number;

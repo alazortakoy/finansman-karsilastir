@@ -134,10 +134,10 @@ describe('karsilastir — enKarliModel selection', () => {
 });
 
 // ============================================================
-// SPEC 9.4 — R=0 means no discounting
+// R=0 means no discounting
 // ============================================================
 describe('integration — R=0 no discounting', () => {
-  it('all models: maliyetNBD ≈ toplamOdeme when R=0 and no asset adjustment', () => {
+  it('all models: maliyetNBD ≈ toplamOdeme when R=0', () => {
     const common = makeCommon({ R: 0, r_ev: 0, K_0: 0 });
     const banka = makeBanka({ bsmvOrani: 0.05, dosyaMasrafi: 0, ekspertizUcreti: 0, ipotekHarciOrani: 0 });
     const evim = makeEvim();
@@ -146,13 +146,13 @@ describe('integration — R=0 no discounting', () => {
     expect(bankaResult.maliyetNBD).toBeCloseTo(bankaResult.toplamOdeme, 0);
 
     const evimResult = hesaplaEvimNBD(common, evim);
-    // beklemeFarki = F/1^t - F = 0 when r_ev=0 and R=0
+    // No beklemeFarki, so maliyetNBD = toplamOdeme when R=0
     expect(evimResult.maliyetNBD).toBeCloseTo(evimResult.toplamOdeme, 0);
   });
 });
 
 // ============================================================
-// SPEC 9.5 — P = F (full cash payment)
+// P = F (full cash payment)
 // ============================================================
 describe('integration — P = F edge case', () => {
   it('banka: no loan, maliyetNBD = F + one-time costs', () => {
@@ -169,17 +169,15 @@ describe('integration — P = F edge case', () => {
     const evim = makeEvim();
     const result = hesaplaEvimNBD(common, evim);
 
-    // finansmanTutari = F-P = 0, so O_toplam = 0
     expect(result.toplamOrgUcreti).toBe(0);
-    // maliyetNBD = P + installments (taksit plan still runs for n_e months)
     expect(result.maliyetNBD).toBeGreaterThanOrEqual(5_000_000);
   });
 });
 
 // ============================================================
-// SPEC 9.1 — Full reference scenario
+// Full reference scenario
 // ============================================================
-describe('integration — SPEC 9.1 full scenario', () => {
+describe('integration — full scenario', () => {
   it('runs the complete comparison with SPEC parameters', () => {
     const R = yillikToAylik(0.40);
     const r_ev = yillikToAylik(0.30);
@@ -227,10 +225,10 @@ describe('integration — SPEC 9.1 full scenario', () => {
     expect(Number.isFinite(result.evim.maliyetNBD)).toBe(true);
     expect(Number.isFinite(result.biriktir.maliyetNBD)).toBe(true);
 
-    // Banka total payment must exceed F (interest-bearing)
+    // Banka total payment must exceed F (interest-bearing loan)
     expect(result.banka.toplamOdeme).toBeGreaterThan(5_000_000);
 
-    // Evim has org fee (based on F-P = 5M, O_oran=0.08 → 400k)
+    // Evim has org fee
     expect(result.evim.toplamOrgUcreti).toBe(400_000);
 
     // Biriktir has birikim detail
@@ -269,8 +267,30 @@ describe('integration — parameter sensitivity', () => {
 
     const result = karsilastir(common, banka, evim, birikim);
 
-    // With 0 return, biriktir must pay all installments + shortfall
-    // This should be at least as expensive as evim
     expect(Number.isFinite(result.biriktir.maliyetNBD)).toBe(true);
+  });
+});
+
+// ============================================================
+// All three models use same period indexing
+// ============================================================
+describe('integration — period indexing consistency', () => {
+  it('all models start cash flows from month 1', () => {
+    const result = karsilastir(makeCommon(), makeBanka(), makeEvim(), makeBirikim());
+
+    expect(result.banka.aylikNakitAkisi[0].ay).toBe(1);
+    expect(result.evim.aylikNakitAkisi[0].ay).toBe(1);
+    expect(result.biriktir.aylikNakitAkisi[0].ay).toBe(1);
+  });
+
+  it('all models have sequential month numbering', () => {
+    const result = karsilastir(makeCommon(), makeBanka(), makeEvim(), makeBirikim());
+
+    for (const model of ['banka', 'evim', 'biriktir'] as const) {
+      const flows = result[model].aylikNakitAkisi;
+      for (let i = 0; i < flows.length; i++) {
+        expect(flows[i].ay).toBe(i + 1);
+      }
+    }
   });
 });
